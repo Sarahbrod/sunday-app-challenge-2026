@@ -69,67 +69,67 @@ const metricsData = {
     { label: 'Payment Completion', value: '91%',    delta: '+2%',  positive: true,  sub: 'vs last week' },
     { label: 'Tip Conversion',     value: '18%',    delta: '−1%',  positive: false, sub: 'vs last week' },
     { label: 'Guest Satisfaction', value: '4.6',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'network status' },
+    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
   ],
   last_week: [
     { label: 'Total Sales',        value: '£323K',  delta: '+3%',  positive: true,  sub: 'last week' },
     { label: 'Payment Completion', value: '89%',    delta: '+1%',  positive: true,  sub: 'vs prior week' },
     { label: 'Tip Conversion',     value: '19%',    delta: '+1%',  positive: true,  sub: 'vs prior week' },
     { label: 'Guest Satisfaction', value: '4.5',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'network status' },
+    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
   ],
   this_month: [
     { label: 'Total Sales',        value: '£1.42M', delta: '+8%',  positive: true,  sub: 'this month' },
     { label: 'Payment Completion', value: '91%',    delta: '+3%',  positive: true,  sub: 'vs last month' },
     { label: 'Tip Conversion',     value: '18%',    delta: '−2%',  positive: false, sub: 'vs last month' },
     { label: 'Guest Satisfaction', value: '4.6',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'network status' },
+    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
   ],
   last_month: [
     { label: 'Total Sales',        value: '£1.31M', delta: '+3%',  positive: true,  sub: 'last month' },
     { label: 'Payment Completion', value: '88%',    delta: '+2%',  positive: true,  sub: 'vs prior month' },
     { label: 'Tip Conversion',     value: '20%',    delta: '−1%',  positive: false, sub: 'vs prior month' },
     { label: 'Guest Satisfaction', value: '4.5',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'network status' },
+    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
   ],
 };
 
 const signals = [
   {
     id: 1, severity: 'high' as const,
-    venue: 'Edinburgh',     title: 'Staffing gap',
-    detail: '3 unfilled shifts across this weekend; Saturday dinner and Sunday brunch are most exposed.',
+    venue: 'Edinburgh',     title: 'Weekend cover needed',
+    detail: 'Three shifts still unfilled this weekend — Saturday dinner and Sunday brunch are most exposed.',
     time: '2 hours ago',    tag: 'Staffing',
     tier: 'good'  as Tier,
-    impactNote: 'Impact if unaddressed — ~380 covers at risk',
-    ctaLabel: 'Review suggestion',
+    impactNote: 'Up to 380 covers at risk if left unfilled',
+    ctaLabel: 'Sort the rota',
     image: '/venue-edinburgh.jpeg',
   },
   {
     id: 2, severity: 'high' as const,
-    venue: 'Covent Garden', title: 'POS sync delayed',
-    detail: 'Last successful sync was 47 minutes ago. Sales data may be incomplete for this period.',
+    venue: 'Covent Garden', title: 'Till sync has stalled',
+    detail: 'Last successful sync was 47 minutes ago — sales figures may be incomplete until this is resolved.',
     time: '47 mins ago',    tag: 'Operations',
     tier: 'risk'  as Tier,
-    impactNote: 'Impact: Financial reporting accuracy',
-    ctaLabel: 'Review issue',
+    impactNote: 'Daily sales reporting affected',
+    ctaLabel: 'Look into it',
     image: '/venue-covent-garden.jpeg',
   },
   {
     id: 3, severity: 'medium' as const,
-    venue: 'Carnaby',       title: 'Declining repeat visits',
-    detail: 'Repeat guest rate down 12% month-on-month. Satisfaction scores remain stable, suggesting a possible experience gap.',
+    venue: 'Carnaby',       title: 'Guests not returning',
+    detail: "Repeat visits down 12% month-on-month. Satisfaction is holding steady — something in the experience isn't bringing guests back for a second visit.",
     time: 'This month',     tag: 'Guest',
     tier: 'watch' as Tier,
-    impactNote: 'Repeat rate down 12% month-on-month',
-    ctaLabel: 'View details',
+    impactNote: 'Repeat visits down 12% on the month',
+    ctaLabel: 'Dig into this',
   },
 ];
 
 const changes = [
-  { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'Brunch menu launch showing strong early uptake. Cover count up 18% on first weekend.',                       time: 'Today' },
-  { id: 2, type: 'up',   venue: 'Network',       text: 'Payment adoption up 6% across the estate following cashless nudge rollout.',                                 time: 'Yesterday' },
-  { id: 3, type: 'down', venue: 'Covent Garden', text: <>Guest satisfaction fell to 3.9<StarRoundedIcon sx={{ fontSize: '0.6rem', color: '#E8A020', verticalAlign: 'middle', position: 'relative', top: '-1px', mx: '1px' }} /> this week, the lowest in the network. Linked to weekend staffing shortfalls.</>, time: '3 days ago' },
+  { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'The new brunch is landing well — covers up 18% on the first weekend. Guests are leaning in.',                 time: 'Today' },
+  { id: 2, type: 'up',   venue: 'Network',       text: 'Cashless nudge is working. Payment adoption up 6% across the estate since the rollout.',                      time: 'Yesterday' },
+  { id: 3, type: 'down', venue: 'Covent Garden', text: <>Guest satisfaction has slipped to 3.9<StarRoundedIcon sx={{ fontSize: '0.6rem', color: '#E8A020', verticalAlign: 'middle', position: 'relative', top: '-1px', mx: '1px' }} /> — the lowest in the house. Weekend staffing is the likely cause.</>, time: '3 days ago' },
 ];
 
 const venues = [
@@ -150,18 +150,18 @@ const REGIONS = [...new Set(venues.map(v => v.region))].sort();
 const drivers = [
   {
     title: 'Payment Adoption', metric: '91% network avg', impact: 'High',
-    insight: 'Every 5% increase in cashless adoption corresponds to +2.3% revenue per cover. Top venues are already above 95%.',
-    note: "King's Cross and Shoreditch leading",
+    insight: "Every 5% lift in cashless adoption adds roughly 2.3% to revenue per cover. King's Cross and Shoreditch are already above 95% — the rest have real ground to gain.",
+    note: "King's Cross and Shoreditch out in front",
   },
   {
     title: 'Team Consistency', metric: '≤15% staff turnover', impact: 'High',
-    insight: 'Venues holding turnover below 15% rate an average 0.4★ higher in guest satisfaction. Teams that know each other create measurably better service.',
-    note: '4 of 8 venues in target range',
+    insight: 'Houses keeping turnover under 15% score 0.4★ higher with guests. A team that knows each other — and knows the menu — brings the hospitality to life in ways a training manual never can.',
+    note: '4 of our 8 houses in range',
   },
   {
     title: 'Pre-Service Ritual', metric: '3 of 5 top venues', impact: 'Medium',
-    insight: "Daily team briefing is the single most correlated behaviour with top performance. Shoreditch's pre-service model is directly replicable.",
-    note: 'Shoreditch model documented',
+    insight: "The pre-service gather — sharing the stories, the specials, the care behind the food — is the single behaviour most tied to top scores. Shoreditch's model is ready to hand over.",
+    note: 'Shoreditch model ready to share',
   },
 ];
 
@@ -171,20 +171,20 @@ const menuData = {
   opportunities: [
     {
       icon: LocalOfferOutlinedIcon,
-      title: 'Naan bundle',
-      detail: 'Add a prompted naan side to any main at £2.50. Current attach rate is 14%; a nudge at ordering could push this above 25%.',
+      title: 'Naan alongside',
+      detail: 'A prompt to add a naan with any main at £2.50. Only 14% of guests are taking one — a well-placed nudge at ordering could more than double that.',
       impact: 'Est. +£8K / month',
     },
     {
       icon: WbSunnyOutlinedIcon,
-      title: 'Weekend brunch set',
-      detail: 'A fixed 3-course brunch at £28 targets the repeat visit gap at Carnaby and Covent Garden. High-margin, experience-led format.',
+      title: 'Set brunch menu',
+      detail: 'A three-course set at £28 — something to savour slowly. Targets the repeat visit gap at Carnaby and Covent Garden with a format guests want to return for.',
       impact: 'Addresses repeat visit decline',
     },
     {
       icon: LocalCafeOutlinedIcon,
-      title: 'Chai & dessert pairing',
-      detail: 'Complimentary chai with any dessert for loyalty members. Drives dessert attachment and loyalty app sign-ups at low incremental cost.',
+      title: 'Chai with dessert',
+      detail: 'Complimentary chai with every dessert for loyalty members. A small gesture that makes the end of a meal feel genuinely looked after — and brings guests into the app at almost no cost.',
       impact: 'Boosts loyalty engagement',
     },
   ],
@@ -245,7 +245,7 @@ export default function HomePage() {
             Good morning, Marcus.
           </Typography>
           <Typography sx={{ fontSize: '0.875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-            Wednesday, 20 May 2026 · Morning briefing · 8 Dishoom locations
+            Wednesday, 20 May 2026 · Morning briefing · 8 houses
           </Typography>
         </Box>
 
@@ -271,10 +271,10 @@ export default function HomePage() {
                     <CheckRoundedIcon sx={{ color: '#fff', fontSize: '1.375rem' }} />
                   </Box>
                   <Typography sx={{ fontSize: '1.375rem', fontWeight: 600, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.25, mb: 1 }}>
-                    Most venues<br />operating normally
+                    The house is<br />in good shape.
                   </Typography>
                   <Typography sx={{ fontSize: '0.8125rem', color: 'rgba(255,255,255,0.5)', letterSpacing: '-0.005em', lineHeight: 1.5 }}>
-                    7 of 10 venues are on or above target today
+                    Seven of our ten houses are on or above target today
                   </Typography>
                 </Box>
 
@@ -291,9 +291,9 @@ export default function HomePage() {
 
                 <Box sx={{ display: 'flex', gap: 1.5, flex: 1 }}>
                   {[
-                    { Icon: FormatListBulletedRoundedIcon, value: '2', label: 'Items worth\nyour attention', bg: C.grey100, iconColor: C.textSecondary, valueColor: C.textPrimary },
-                    { Icon: TrendingUpRoundedIcon,          value: '3', label: 'Opportunities\nto drive impact',  bg: C.successLight, iconColor: '#2E7D52', valueColor: '#2E7D52' },
-                    { Icon: WarningAmberRoundedIcon,        value: '1', label: 'Venue at risk\nneeds focus',      bg: C.errorLight,   iconColor: C.errorMain, valueColor: C.errorDark },
+                    { Icon: FormatListBulletedRoundedIcon, value: '2', label: 'Things worth\nyour attention', bg: C.grey100, iconColor: C.textSecondary, valueColor: C.textPrimary },
+                    { Icon: TrendingUpRoundedIcon,          value: '3', label: 'Opportunities\nto act on',        bg: C.successLight, iconColor: '#2E7D52', valueColor: '#2E7D52' },
+                    { Icon: WarningAmberRoundedIcon,        value: '1', label: 'One house\nneeding focus',        bg: C.errorLight,   iconColor: C.errorMain, valueColor: C.errorDark },
                   ].map(({ Icon, value, label, bg, iconColor, valueColor }) => (
                     <Box key={label} sx={{ flex: 1, backgroundColor: bg, borderRadius: '10px', p: 2, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: 110 }}>
                       <Icon sx={{ fontSize: '1.125rem', color: iconColor }} />
@@ -334,7 +334,7 @@ export default function HomePage() {
                           <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: C.textMuted, lineHeight: 1 }}>{i + 1}</Typography>
                         </Box>
                         <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textMuted }}>
-                          Worth attention
+                          Needs your eye
                         </Typography>
                       </Box>
                       <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em', lineHeight: 1.3, mb: 0.6 }}>
@@ -372,7 +372,7 @@ export default function HomePage() {
             <Grid size={{ xs: 12, md: 7 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
-                  <SectionLabel aside="3 items">Priority Signals</SectionLabel>
+                  <SectionLabel aside="3 items">Signals to act on</SectionLabel>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {signals.map((s, i) => (
                       <Box key={s.id}>
@@ -411,7 +411,7 @@ export default function HomePage() {
             <Grid size={{ xs: 12, md: 5 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
-                  <SectionLabel>Recent Changes</SectionLabel>
+                  <SectionLabel>Across the estate</SectionLabel>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {changes.map((c, i) => (
                       <Box key={c.id}>
@@ -508,10 +508,10 @@ export default function HomePage() {
               <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5, gap: 2 }}>
                 <Box>
                   <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em', mb: 0.4 }}>
-                    Venue Performance
+                    House Performance
                   </Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                    Showing {filteredVenues.length} of {venues.length} venues
+                    Showing {filteredVenues.length} of {venues.length} houses
                     {activeRegion ? ` · ${activeRegion}` : ''}
                     {activeTier ? ` · ${TIER_STYLE[activeTier].label}` : ''}
                   </Typography>
@@ -588,13 +588,13 @@ export default function HomePage() {
                   <Button size="small" variant="outlined" onClick={() => setShowVenueList(v => !v)}
                     sx={{ mt: 1.5, color: C.textSecondary, fontSize: '0.75rem', fontWeight: 400, textTransform: 'none', letterSpacing: '-0.005em', borderColor: C.grey300, borderRadius: '6px', py: 0.5, px: 1.5, '&:hover': { borderColor: C.grey500, backgroundColor: 'transparent', color: C.textPrimary } }}
                   >
-                    {showVenueList ? '↑ Hide all venues' : `↓ Show all venues (${filteredVenues.length})`}
+                    {showVenueList ? '↑ Hide all houses' : `↓ Show all houses (${filteredVenues.length})`}
                   </Button>
 
                   <Collapse in={showVenueList} timeout={200}>
                     <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column' }}>
                       {filteredVenues.length === 0 ? (
-                        <Typography sx={{ fontSize: '0.8125rem', color: C.textMuted, py: 1.5, fontStyle: 'italic' }}>No venues match the current filters.</Typography>
+                        <Typography sx={{ fontSize: '0.8125rem', color: C.textMuted, py: 1.5, fontStyle: 'italic' }}>No houses match these filters.</Typography>
                       ) : filteredVenues.map((v, i) => {
                         const ts = TIER_STYLE[v.tier as Tier];
                         return (
@@ -621,7 +621,7 @@ export default function HomePage() {
                 <Grid size={{ xs: 12, md: 5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
                     <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
-                      Top Performers{activeRegion ? ` · ${activeRegion}` : ''}
+                      Leading the way{activeRegion ? ` · ${activeRegion}` : ''}
                     </Typography>
                     <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
                       Score
@@ -629,7 +629,7 @@ export default function HomePage() {
                   </Box>
 
                   {filteredVenues.length === 0 ? (
-                    <Typography sx={{ fontSize: '0.8125rem', color: C.textMuted, py: 1.5, fontStyle: 'italic' }}>No venues match.</Typography>
+                    <Typography sx={{ fontSize: '0.8125rem', color: C.textMuted, py: 1.5, fontStyle: 'italic' }}>No houses match.</Typography>
                   ) : filteredVenues.slice(0, 5).map((v, i) => {
                     const ts = TIER_STYLE[v.tier as Tier];
                     return (
@@ -670,7 +670,7 @@ export default function HomePage() {
                 </Typography>
               </Box>
               <Typography sx={{ fontSize: '0.875rem', color: C.purpleDark, lineHeight: 1.65, letterSpacing: '-0.01em', fontStyle: 'italic', maxWidth: 680 }}>
-                "High-performing sites consistently front-load team briefings before each service. Consider replicating Shoreditch's pre-service ritual at Carnaby and Covent Garden. It's the highest-leverage operational change available this month."
+                "The houses that shine are the ones that gather before service — no exceptions. Replicating Shoreditch's pre-service ritual at Carnaby and Covent Garden is the single highest-leverage change available right now."
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
                 <Chip label="Shoreditch model"  size="small" sx={{ height: 18, backgroundColor: 'rgba(64,15,102,0.1)', color: C.purpleDark, fontSize: '0.5625rem', fontWeight: 600, '& .MuiChip-label': { px: '8px' } }} />
@@ -682,7 +682,7 @@ export default function HomePage() {
 
         {/* ── Performance Drivers ─────────────────────────────────────── */}
         <Box className="fade-in delay-6" sx={{ mb: 4 }}>
-          <SectionLabel>Performance Drivers</SectionLabel>
+          <SectionLabel>What moves the needle</SectionLabel>
           <Grid container spacing={2}>
             {drivers.map((d) => (
               <Grid key={d.title} size={{ xs: 12, md: 4 }}>
@@ -715,7 +715,7 @@ export default function HomePage() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <SectionLabel>Menu Highlights</SectionLabel>
+                <SectionLabel>What guests are ordering</SectionLabel>
                 <Button size="small" variant="text" sx={{ fontSize: '0.75rem', fontWeight: 500, color: C.textSecondary, textTransform: 'none', letterSpacing: '-0.005em', px: 1, minWidth: 0, '&:hover': { backgroundColor: C.grey100, color: C.textPrimary } }}>
                   View all
                 </Button>
