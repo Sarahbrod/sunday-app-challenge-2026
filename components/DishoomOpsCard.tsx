@@ -141,7 +141,7 @@ export default function DishoomOpsCard() {
         }}
       >
         {/* Focus today */}
-        <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
           <Box>
             <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
               Focus today
@@ -165,8 +165,8 @@ export default function DishoomOpsCard() {
         />
 
         {/* Snapshot metrics */}
-        <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.75 }}>
+        <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+          <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
             This week
           </Typography>
           <Stack divider={<Divider sx={{ borderColor: C.grey300, my: 1.25 }} />}>

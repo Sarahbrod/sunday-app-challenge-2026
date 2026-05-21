@@ -19,6 +19,7 @@ import { TIER_STYLE, type Tier } from '@/components/venueData';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import LocalCafeOutlinedIcon from '@mui/icons-material/LocalCafeOutlined';
+import CardGiftcardOutlinedIcon from '@mui/icons-material/CardGiftcardOutlined';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
@@ -129,7 +130,7 @@ const signals = [
 ];
 
 const changes = [
-  { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'The new brunch is landing well. Covers up 18% on the first weekend, guests are leaning in.',                  time: 'Today' },
+  { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'The new brunch is landing well. Covers up 18% on the first weekend, guests are leaning in.',                  time: 'Yesterday' },
   { id: 2, type: 'up',   venue: 'Network',       text: 'Cashless nudge is working. Payment adoption up 6% across the estate since the rollout.',                      time: 'Yesterday' },
   { id: 3, type: 'down', venue: 'Covent Garden', text: <>Guest satisfaction has slipped to 3.9<StarRoundedIcon sx={{ fontSize: '0.6rem', color: '#E8A020', verticalAlign: 'middle', position: 'relative', top: '-1px', mx: '1px' }} />, the lowest in the house. Weekend staffing is the likely cause.</>, time: '3 days ago' },
 ];
@@ -172,8 +173,15 @@ const drivers = [
 ];
 
 const menuData = {
-  trending:  [{ name: 'House Black Daal', delta: '+23%' }, { name: 'Lamb Chops', delta: '+15%' }, { name: 'Roomali Roti', delta: '+8%' }],
-  declining: [{ name: 'Chicken Ruby', delta: '−11%' }, { name: 'House Salad', delta: '−7%' }],
+  trending:  [
+    { name: 'House Black Daal', delta: '+23%', img: '/images/food/daal.jpg',    orders: 1842 },
+    { name: 'Lamb Chops',       delta: '+15%', img: '/images/food/lamb.jpg',    orders: 1340 },
+    { name: 'Roomali Roti',     delta: '+8%',  img: '/images/food/roti.jpg',    orders: 983  },
+  ],
+  declining: [
+    { name: 'Chicken Ruby', delta: '−11%', img: '/images/food/chicken.jpg', orders: 612 },
+    { name: 'House Salad',  delta: '−7%',  img: '/images/food/salad.jpg',   orders: 448 },
+  ],
   opportunities: [
     {
       icon: LocalOfferOutlinedIcon,
@@ -192,6 +200,12 @@ const menuData = {
       title: 'Chai with dessert',
       detail: 'Complimentary chai with every dessert for loyalty members. A small gesture that makes the end of a meal feel genuinely looked after, and brings guests into the app at almost no cost.',
       impact: 'Boosts loyalty engagement',
+    },
+    {
+      icon: CardGiftcardOutlinedIcon,
+      title: 'Birthday dining offer',
+      detail: 'A personalised invite for loyalty members in the month of their birthday. Early data from King\'s Cross shows a 34% redemption rate and spend 22% above the average cover.',
+      impact: 'Est. +£5K / month',
     },
   ],
 };
@@ -255,7 +269,7 @@ export default function HomePage() {
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: C.grey100 }}>
       <Sidebar />
 
-      <Box component="main" sx={{ ml: '220px', flex: 1, px: { xs: 3, md: 4, lg: 5 }, pb: 8, maxWidth: 1280 }}>
+      <Box component="main" sx={{ ml: { xs: 0, md: 'var(--sidebar-w, 220px)' }, transition: 'margin-left 0.22s ease', flex: 1, px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8, maxWidth: 1280 }}>
 
         {/* ── Greeting ────────────────────────────────────────────────── */}
         <Box className="fade-in delay-1" sx={{ pt: 5.5, pb: 4 }}>
@@ -275,42 +289,6 @@ export default function HomePage() {
         {/* ── Priority Signals + Recent Changes ───────────────────────── */}
         <Box className="fade-in delay-3" sx={{ mb: 4 }}>
           <SectionLabel large>What matters today</SectionLabel>
-
-          {/* Attention cards */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            {signals.filter(s => s.severity === 'high').map((s, i) => {
-              const ts = TIER_STYLE[s.tier];
-              return (
-                <Grid key={s.id} size={{ xs: 12, sm: 6 }}>
-                  <Card sx={{ display: 'flex', overflow: 'hidden', height: '100%' }}>
-                    {/* Content */}
-                    <Box sx={{ flex: 1, p: 2.5, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                        <Box sx={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: C.textMuted, lineHeight: 1 }}>{i + 1}</Typography>
-                        </Box>
-                        <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textMuted }}>
-                          Needs your eye
-                        </Typography>
-                      </Box>
-                      <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em', lineHeight: 1.3, mb: 0.6 }}>
-                        {s.venue} {s.title.toLowerCase()}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em', flex: 1, mb: 1.75 }}>
-                        {s.detail}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                        <Chip label={s.impactNote} size="small" sx={{ height: 20, fontSize: '0.5625rem', fontWeight: 500, backgroundColor: C.grey100, color: C.textSecondary, letterSpacing: '-0.005em', '& .MuiChip-label': { px: '8px' } }} />
-                        <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: ts.bg, letterSpacing: '-0.01em', whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0, '&:hover': { opacity: 0.75 } }}>
-                          {s.ctaLabel} →
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
 
           <Grid container spacing={2}>
 
@@ -357,7 +335,7 @@ export default function HomePage() {
             <Grid size={{ xs: 12, md: 5 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
-                  <SectionLabel>Across the estate</SectionLabel>
+                  <SectionLabel>Across venues</SectionLabel>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {changes.map((c, i) => (
                       <Box key={c.id}>
@@ -451,7 +429,7 @@ export default function HomePage() {
             <CardContent>
 
               {/* Header */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5, gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'flex-start' }, justifyContent: 'space-between', mb: 2.5, gap: { xs: 1.5, sm: 2 } }}>
                 <Box>
                   <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em', mb: 0.4 }}>
                     House Performance
@@ -464,7 +442,7 @@ export default function HomePage() {
                 </Box>
 
                 {/* Region picker */}
-                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', flexShrink: 0 }}>
+                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: { xs: 'nowrap', sm: 'wrap' }, justifyContent: { xs: 'flex-start', sm: 'flex-end' }, flexShrink: 0, overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.5, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}>
                   {[{ label: 'All', value: null as string | null, count: venues.length }, ...REGIONS.map(r => ({ label: r, value: r, count: venues.filter(v => v.region === r).length }))].map(({ label, value, count }) => {
                     const isSelected = activeRegion === value;
                     const isDimmed = activeRegion !== null && !isSelected;
@@ -711,54 +689,58 @@ export default function HomePage() {
             </Button>
           }>What guests are ordering</SectionLabel>
           <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+            <CardContent sx={{ p: '20px !important' }}>
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'stretch', gap: 0 }}>
 
                 {/* Left: menu movement */}
-                <Box sx={{ width: '42%', flexShrink: 0, pr: 3.5 }}>
+                <Box sx={{ width: { xs: '100%', md: '42%' }, flexShrink: 0, pr: { xs: 0, md: 3 }, pb: { xs: 3, md: 0 } }}>
 
-                  {/* Trending */}
-                  <Box sx={{ mb: 1.5 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      Guests are leaning into
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
+                  {/* Trending up */}
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5 }}>
+                    Trending up
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {(() => {
                       const maxVal = Math.max(...menuData.trending.map(i => parseFloat(i.delta.replace('+', '').replace('%', ''))));
                       return menuData.trending.map((item) => {
                         const val = parseFloat(item.delta.replace('+', '').replace('%', ''));
                         return (
-                          <Box key={item.name} sx={{ py: 1.125 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-                              <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em' }}>{item.name}</Typography>
-                              <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: '#2E7D52', letterSpacing: '-0.01em' }}>{item.delta}</Typography>
+                          <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                            <Box component="img" src={item.img} alt={item.name} sx={{ width: 36, height: 36, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.25 }}>
+                                <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500 }}>{item.name}</Typography>
+                                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: '#2E7D52', letterSpacing: '-0.01em' }}>{item.delta}</Typography>
+                              </Box>
+                              <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em', mb: 0.625 }}>{item.orders.toLocaleString()} orders</Typography>
+                              <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: '#2E7D52', borderRadius: 2 } }} />
                             </Box>
-                            <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: '#2E7D52', borderRadius: 2 } }} />
                           </Box>
                         );
                       });
                     })()}
                   </Box>
 
-                  {/* Declining */}
-                  <Box sx={{ mb: 1.5 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      Guests are pulling back on
-                    </Typography>
-                  </Box>
+                  {/* Trending down */}
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5, mt: 2.5 }}>
+                    Trending down
+                  </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {(() => {
                       const maxVal = Math.max(...menuData.declining.map(i => Math.abs(parseFloat(i.delta.replace('−', '-').replace('%', '')))));
                       return menuData.declining.map((item) => {
                         const val = Math.abs(parseFloat(item.delta.replace('−', '-').replace('%', '')));
                         return (
-                          <Box key={item.name} sx={{ py: 1.125 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.75 }}>
-                              <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em' }}>{item.name}</Typography>
-                              <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: C.errorMain, letterSpacing: '-0.01em' }}>{item.delta}</Typography>
+                          <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                            <Box component="img" src={item.img} alt={item.name} sx={{ width: 36, height: 36, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.25 }}>
+                                <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500 }}>{item.name}</Typography>
+                                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: C.errorMain, letterSpacing: '-0.01em' }}>{item.delta}</Typography>
+                              </Box>
+                              <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em', mb: 0.625 }}>{item.orders.toLocaleString()} orders</Typography>
+                              <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: C.errorMain, borderRadius: 2 } }} />
                             </Box>
-                            <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: C.errorMain, borderRadius: 2 } }} />
                           </Box>
                         );
                       });
@@ -767,29 +749,30 @@ export default function HomePage() {
 
                 </Box>
 
-                <Divider orientation="vertical" flexItem />
+                <Divider orientation="vertical" flexItem sx={{ borderColor: C.grey300, display: { xs: 'none', md: 'block' } }} />
+                <Divider sx={{ borderColor: C.grey300, display: { xs: 'block', md: 'none' } }} />
 
                 {/* Right: opportunities */}
-                <Box sx={{ flex: 1, pl: 3.5, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.purpleDark, mb: 1.75, opacity: 0.7 }}>
+                <Box sx={{ flex: 1, pl: { xs: 0, md: 3 }, pt: { xs: 3, md: 0 }, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5 }}>
                     Opportunities
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {menuData.opportunities.map((o) => (
-                      <Box key={o.title} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, backgroundColor: '#F0E6FA', border: '1px solid rgba(208,171,237,0.35)', borderRadius: '10px', p: '13px 15px' }}>
-                        <Box sx={{ width: 32, height: 32, borderRadius: '7px', backgroundColor: 'rgba(208,171,237,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: '1px' }}>
-                          <o.icon sx={{ fontSize: '1rem', color: C.purpleDark }} />
+                      <Box key={o.title} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25, backgroundColor: C.grey100, border: `1px solid ${C.grey300}`, borderRadius: '10px', p: '12px 14px' }}>
+                        <Box sx={{ width: 30, height: 30, borderRadius: '7px', backgroundColor: '#fff', border: `1px solid ${C.grey300}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: '1px' }}>
+                          <o.icon sx={{ fontSize: '0.9375rem', color: C.textSecondary }} />
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, mb: 0.4 }}>
-                            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.purpleDark, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, mb: 0.375 }}>
+                            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                               {o.title}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: C.purpleDark, opacity: 0.5, letterSpacing: '-0.005em', flexShrink: 0, lineHeight: 1.3, pt: '1px' }}>
+                            <Typography sx={{ fontSize: '0.6875rem', fontWeight: 500, color: C.textMuted, letterSpacing: '-0.005em', flexShrink: 0, lineHeight: 1.3, pt: '1px' }}>
                               {o.impact}
                             </Typography>
                           </Box>
-                          <Typography sx={{ fontSize: '0.75rem', color: C.purpleDark, lineHeight: 1.55, opacity: 0.75, letterSpacing: '-0.005em' }}>
+                          <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em' }}>
                             {o.detail}
                           </Typography>
                         </Box>
