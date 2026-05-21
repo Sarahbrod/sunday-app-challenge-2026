@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
@@ -15,7 +14,8 @@ import Collapse from '@mui/material/Collapse';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Sidebar from '@/components/Sidebar';
-import { TIER_STYLE, type Tier } from '@/components/VenueMap';
+import VenueMapComponent from '@/components/VenueMap';
+import { TIER_STYLE, type Tier } from '@/components/venueData';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import WbSunnyOutlinedIcon from '@mui/icons-material/WbSunnyOutlined';
 import LocalCafeOutlinedIcon from '@mui/icons-material/LocalCafeOutlined';
@@ -27,7 +27,6 @@ import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 
-const VenueMap = dynamic(() => import('@/components/VenueMap'), { ssr: false });
 
 // ─── Design system tokens ─────────────────────────────────────────────────────
 const C = {
@@ -221,6 +220,8 @@ function TrendArrow({ trend }: { trend: string }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [showVenueList, setShowVenueList] = useState(false);
   const [activeTier, setActiveTier] = useState<Tier | null>(null);
   const [activeRegion, setActiveRegion] = useState<string | null>('London');
@@ -550,7 +551,7 @@ export default function HomePage() {
                 <Grid size={{ xs: 12, md: 7 }}>
 
                   <Box sx={{ height: 360, borderRadius: '10px', overflow: 'hidden', border: `1px solid rgba(0,0,0,0.06)` }}>
-                    <VenueMap activeTier={activeTier} activeRegion={activeRegion} />
+                    {mounted && <VenueMapComponent activeTier={activeTier} activeRegion={activeRegion} />}
                   </Box>
 
                   {/* Tier filter */}

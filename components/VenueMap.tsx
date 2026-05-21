@@ -1,44 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import 'leaflet/dist/leaflet.css';
-import type * as LeafletTypes from 'leaflet';
-
-export type Tier = 'top' | 'good' | 'watch' | 'risk';
-
-export interface MapVenue {
-  name: string;
-  lat: number;
-  lng: number;
-  score: number;
-  satisfaction: number;
-  tier: Tier;
-  region: string;
-}
-
-export const ALL_VENUES: MapVenue[] = [
-  { name: "King's Cross",  lat: 51.5351, lng: -0.1248, score: 94, satisfaction: 4.8, tier: 'top',   region: 'London'     },
-  { name: 'Shoreditch',    lat: 51.5231, lng: -0.0748, score: 91, satisfaction: 4.7, tier: 'top',   region: 'London'     },
-  { name: 'Liverpool St',  lat: 51.5178, lng: -0.1090, score: 83, satisfaction: 4.4, tier: 'good',  region: 'London'     },
-  { name: 'Manchester',    lat: 53.4836, lng: -2.2493, score: 82, satisfaction: 4.4, tier: 'good',  region: 'Manchester' },
-  { name: 'Kensington',    lat: 51.4988, lng: -0.1943, score: 80, satisfaction: 4.3, tier: 'good',  region: 'London'     },
-  { name: 'Edinburgh',     lat: 55.9528, lng: -3.1872, score: 79, satisfaction: 4.3, tier: 'good',  region: 'Edinburgh'  },
-  { name: 'Battersea',     lat: 51.4835, lng: -0.1440, score: 78, satisfaction: 4.2, tier: 'good',  region: 'London'     },
-  { name: 'Birmingham',    lat: 52.4796, lng: -1.9026, score: 74, satisfaction: 4.2, tier: 'watch', region: 'Birmingham' },
-  { name: 'Carnaby',       lat: 51.5131, lng: -0.1385, score: 71, satisfaction: 4.1, tier: 'watch', region: 'London'     },
-  { name: 'Covent Garden', lat: 51.5131, lng: -0.1260, score: 65, satisfaction: 4.0, tier: 'risk',  region: 'London'     },
-];
-
-export const TIER_STYLE: Record<Tier, {
-  bg: string; text: string;
-  bgPastel: string; textPastel: string;
-  label: string; pulse?: boolean;
-}> = {
-  top:   { bg: '#2E7D52', text: '#FFFFFF', bgPastel: '#C5E8D7', textPastel: '#1A5433', label: 'Top performer' },
-  good:  { bg: '#3B72C0', text: '#FFFFFF', bgPastel: '#C8D9F5', textPastel: '#1E3D73', label: 'On target' },
-  watch: { bg: '#F0B680', text: '#72430B', bgPastel: '#FAE6CC', textPastel: '#72430B', label: 'Needs attention' },
-  risk:  { bg: '#E77171', text: '#6F0C23', bgPastel: '#FAD5D5', textPastel: '#6F0C23', label: 'At risk', pulse: true },
-};
+import type { Map, Marker } from 'leaflet';
+import { ALL_VENUES, TIER_STYLE } from './venueData';
+import type { Tier } from './venueData';
 
 interface VenueMapProps {
   activeTier?: Tier | null;
@@ -47,23 +12,26 @@ interface VenueMapProps {
 
 export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<LeafletTypes.Map | null>(null);
-  const markersRef = useRef<LeafletTypes.Marker[]>([]);
-  // Refs keep filter values readable inside the async init closure
+  const mapRef = useRef<Map | null>(null);
+  const markersRef = useRef<Marker[]>([]);
   const activeTierRef = useRef(activeTier);
   const activeRegionRef = useRef(activeRegion);
   useEffect(() => { activeTierRef.current = activeTier; }, [activeTier]);
   useEffect(() => { activeRegionRef.current = activeRegion; }, [activeRegion]);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    let cancelled = false;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
 
-    (async () => {
-      const L = (await import('leaflet')).default;
-      if (cancelled || !containerRef.current) return;
+    let map: Map | null = null;
 
-      const map = L.map(containerRef.current, {
+    import('leaflet').then((mod) => {
+      const L = mod.default ?? (window as unknown as { L: typeof import('leaflet') }).L;
+      if (!L) return;
+      if (!containerRef.current) return;
+      if (mapRef.current) return;
+
+      map = L.map(containerRef.current, {
         center: [53.5, -1.8],
         zoom: 6,
         zoomControl: false,
@@ -121,7 +89,7 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
         });
 
         const marker = L.marker([v.lat, v.lng], { icon })
-          .addTo(map)
+          .addTo(map!)
           .bindPopup(
             `<div style="min-width:130px;">
                <div style="font-weight:600;font-size:13px;color:#0A0A0A;margin-bottom:5px;letter-spacing:-0.01em;">${v.name}</div>
@@ -139,7 +107,6 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
         markersRef.current.push(marker);
       });
 
-      // Apply any filter state that existed before the map finished loading
       const t = activeTierRef.current;
       const r = activeRegionRef.current;
       ALL_VENUES.forEach((v, i) => {
@@ -155,20 +122,25 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
         { padding: [40, 40] }
       );
 
+      // Force tile re-render after layout settles (needed when container
+      // size wasn't stable at init time)
+      requestAnimationFrame(() => map?.invalidateSize());
+
       mapRef.current = map;
-    })();
+    }).catch(() => {});
 
     return () => {
-      cancelled = true;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+      } else if (map) {
+        // import resolved but mapRef not yet assigned when cleanup ran
+        map.remove();
       }
       markersRef.current = [];
     };
   }, []);
 
-  // Show/hide markers and fly to bounds when either filter changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -183,7 +155,8 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
       if (!visible && map.hasLayer(marker)) marker.remove();
     });
 
-    import('leaflet').then(({ default: L }) => {
+    import('leaflet').then((mod) => {
+      const L = mod.default ?? (window as unknown as { L: typeof import('leaflet') }).L;
       const visible = ALL_VENUES.filter(v =>
         (activeTier == null || activeTier === v.tier) &&
         (activeRegion == null || activeRegion === v.region)
