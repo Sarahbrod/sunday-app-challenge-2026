@@ -269,7 +269,7 @@ export default function HomePage() {
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: C.grey100 }}>
       <Sidebar />
 
-      <Box component="main" sx={{ ml: { xs: 0, md: 'var(--sidebar-w, 220px)' }, transition: 'margin-left 0.22s ease', flex: 1, px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8, maxWidth: 1280 }}>
+      <Box component="main" sx={{ ml: { xs: 0, md: 'var(--sidebar-w, 220px)' }, transition: 'margin-left 0.22s ease', flex: 1, minWidth: 0, px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8 }}>
 
         {/* ── Greeting ────────────────────────────────────────────────── */}
         <Box className="fade-in delay-1" sx={{ pt: 5.5, pb: 4 }}>
