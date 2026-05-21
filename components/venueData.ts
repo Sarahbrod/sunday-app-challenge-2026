@@ -18,6 +18,7 @@ export const ALL_VENUES: MapVenue[] = [
   { name: 'Kensington',    lat: 51.4988, lng: -0.1943, score: 80, satisfaction: 4.3, tier: 'good',  region: 'London'     },
   { name: 'Edinburgh',     lat: 55.9528, lng: -3.1872, score: 79, satisfaction: 4.3, tier: 'good',  region: 'Edinburgh'  },
   { name: 'Battersea',     lat: 51.4835, lng: -0.1440, score: 78, satisfaction: 4.2, tier: 'good',  region: 'London'     },
+  { name: 'Bristol',       lat: 51.4545, lng: -2.5879, score: 77, satisfaction: 4.2, tier: 'good',  region: 'Bristol'    },
   { name: 'Birmingham',    lat: 52.4796, lng: -1.9026, score: 74, satisfaction: 4.2, tier: 'watch', region: 'Birmingham' },
   { name: 'Carnaby',       lat: 51.5131, lng: -0.1385, score: 71, satisfaction: 4.1, tier: 'watch', region: 'London'     },
   { name: 'Covent Garden', lat: 51.5131, lng: -0.1260, score: 65, satisfaction: 4.0, tier: 'risk',  region: 'London'     },
