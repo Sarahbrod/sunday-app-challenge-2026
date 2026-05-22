@@ -138,28 +138,31 @@ const signals = [
   {
     id: 1, severity: 'high' as const,
     venue: 'Edinburgh',     title: 'Weekend cover needed',
+    sub: '3 shifts unfilled — Sat & Sun most exposed',
     detail: 'Three shifts still unfilled this weekend. Saturday dinner and Sunday brunch are most exposed.',
     time: '2 hours ago',    tag: 'Staffing',
     tier: 'good'  as Tier,
-    impactNote: 'Up to 380 covers at risk if left unfilled',
+    impactNote: 'Service risk',
     ctaLabel: 'Sort the rota',
   },
   {
     id: 2, severity: 'high' as const,
     venue: 'Covent Garden', title: 'Till sync has stalled',
+    sub: 'Last successful sync 47 mins ago',
     detail: 'Last successful sync was 47 minutes ago. Sales figures may be incomplete until this is resolved.',
     time: '47 mins ago',    tag: 'Operations',
     tier: 'risk'  as Tier,
-    impactNote: 'Daily sales reporting affected',
+    impactNote: 'Data integrity',
     ctaLabel: 'Look into it',
   },
   {
     id: 3, severity: 'medium' as const,
     venue: 'Carnaby',       title: 'Guests not returning',
+    sub: 'Repeat visits down 12% month-on-month',
     detail: "Repeat visits down 12% month-on-month. Satisfaction is holding steady, but something in the experience isn't bringing guests back for a second visit.",
     time: 'This month',     tag: 'Guest',
     tier: 'watch' as Tier,
-    impactNote: 'Repeat visits down 12% on the month',
+    impactNote: 'Revenue risk',
     ctaLabel: 'Dig into this',
   },
 ];
@@ -328,7 +331,7 @@ export default function HomePage() {
             Good morning, Marcus.
           </Typography>
           <Typography sx={{ fontSize: '0.875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-            Morning briefing · 11 locations · Lunch service in 2h
+            Thursday · Morning briefing · 11 locations · Lunch service in 2h
           </Typography>
         </Box>
 
@@ -410,38 +413,66 @@ export default function HomePage() {
             {/* Priority Signals */}
             <Grid size={{ xs: 12, md: 7 }}>
               <Card sx={{ height: '100%' }}>
-                <CardContent>
+                <CardContent sx={{ p: '20px !important' }}>
                   <SectionLabel aside="3 items">Signals to act on</SectionLabel>
-                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    {signals.map((s, i) => (
-                      <Box key={s.id}>
-                        <Box sx={{ display: 'flex', gap: 2, py: 1.75 }}>
-                          <Box sx={{ pt: 0.3, flexShrink: 0 }}>
-                            <Box sx={{
-                              width: 7, height: 7, borderRadius: '50%', mt: 0.25,
-                              backgroundColor: s.severity === 'high' ? C.errorMain : C.warningMain,
-                            }} />
-                          </Box>
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 1, mb: 0.5 }}>
-                              <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.35 }}>
-                                {s.venue}{' '}
-                                <Typography component="span" sx={{ fontWeight: 400, color: C.textSecondary, fontSize: '0.8125rem' }}>
-                                  , {s.title}
-                                </Typography>
-                              </Typography>
-                              <Chip label={s.tag} size="small" variant="outlined" sx={{ flexShrink: 0, height: 18, fontSize: '0.5625rem', letterSpacing: '0.04em', fontWeight: 600, textTransform: 'uppercase', borderColor: C.grey300, color: C.textMuted, '& .MuiChip-label': { px: '6px' } }} />
-                            </Box>
-                            <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em', mb: 0.75 }}>
-                              {s.detail}
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>{s.time}</Typography>
-                          </Box>
-                        </Box>
-                        {i < signals.length - 1 && <Divider sx={{ ml: 3.75 }} />}
-                      </Box>
+
+                  {/* Column headers */}
+                  <Box sx={{
+                    display: { xs: 'none', md: 'grid' },
+                    gridTemplateColumns: '76px 1fr 96px 88px',
+                    gap: 1.5, pb: 1.25,
+                    borderBottom: `1px solid ${C.grey300}`,
+                  }}>
+                    {['Priority', 'Issue', 'Venue', 'Impact'].map((col) => (
+                      <Typography key={col} sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
+                        {col}
+                      </Typography>
                     ))}
                   </Box>
+
+                  {/* Rows */}
+                  {signals.map((s, i) => (
+                    <Box key={s.id} sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: 'auto 1fr', md: '76px 1fr 96px 88px' },
+                      gap: { xs: 1.25, md: 1.5 },
+                      py: 1.75,
+                      borderBottom: i < signals.length - 1 ? `1px solid ${C.grey100}` : 'none',
+                      alignItems: 'flex-start',
+                    }}>
+
+                      {/* Priority */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        {s.severity === 'high'
+                          ? <WarningAmberRoundedIcon sx={{ fontSize: '0.9375rem', color: C.errorMain, flexShrink: 0 }} />
+                          : <InfoOutlinedIcon sx={{ fontSize: '0.9375rem', color: C.textMuted, flexShrink: 0 }} />
+                        }
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1, whiteSpace: 'nowrap', color: s.severity === 'high' ? C.errorMain : C.textSecondary }}>
+                          {s.severity === 'high' ? 'High' : 'Medium'}
+                        </Typography>
+                      </Box>
+
+                      {/* Issue */}
+                      <Box>
+                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.3 }}>
+                          {s.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.45, letterSpacing: '-0.005em' }}>
+                          {s.sub}
+                        </Typography>
+                      </Box>
+
+                      {/* Venue — hidden on mobile */}
+                      <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                        {s.venue}
+                      </Typography>
+
+                      {/* Impact — hidden on mobile */}
+                      <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                        {s.impactNote}
+                      </Typography>
+                    </Box>
+                  ))}
                 </CardContent>
               </Card>
             </Grid>

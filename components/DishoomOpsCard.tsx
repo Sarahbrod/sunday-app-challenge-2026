@@ -20,14 +20,13 @@ const C = {
   grey300:       '#E2E1E5',
 };
 
-// Colours — AA accessible on white (5–7:1 contrast) while keeping original hues
 const VENUE_HEALTH = [
-  { label: 'Healthy',  count: 7, color: '#2E7D52' }, // green  5.0:1
-  { label: 'At risk',  count: 3, color: '#A85208' }, // amber  5.0:1
-  { label: 'Critical', count: 1, color: '#B83C3C' }, // red    5.4:1
+  { label: 'Healthy',  count: 7, stroke: '#8DD8A5', color: '#2E5158' },
+  { label: 'At risk',  count: 3, stroke: '#F0B680', color: '#72430B' },
+  { label: 'Critical', count: 1, stroke: '#E77171', color: '#6F0C23' },
 ];
 
-const R     = 34;
+const R     = 36;
 const CIRC  = 2 * Math.PI * R;
 const TOTAL = VENUE_HEALTH.reduce((s, e) => s + e.count, 0);
 
@@ -152,15 +151,15 @@ export default function DishoomOpsCard() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {/* Donut with center count */}
-              <Box sx={{ position: 'relative', width: 96, height: 96, flexShrink: 0 }}>
-                <svg width="96" height="96" viewBox="0 0 100 100">
+              <Box sx={{ position: 'relative', width: 112, height: 112, flexShrink: 0 }}>
+                <svg width="112" height="112" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r={R} fill="none" stroke={C.grey300} strokeWidth="9" />
-                  {SEGMENTS.map(({ label, len, angle, color }) => (
+                  {SEGMENTS.map(({ label, len, angle, stroke }) => (
                     <circle
                       key={label}
                       cx="50" cy="50" r={R}
                       fill="none"
-                      stroke={color}
+                      stroke={stroke}
                       strokeWidth="9"
                       strokeLinecap="butt"
                       strokeDasharray={`${len} ${CIRC}`}
@@ -182,6 +181,7 @@ export default function DishoomOpsCard() {
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {VENUE_HEALTH.map(({ label, count, color }) => (
                   <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
                     <Typography sx={{ fontSize: '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, minWidth: 16, flexShrink: 0 }}>
                       {count}
                     </Typography>
@@ -194,10 +194,6 @@ export default function DishoomOpsCard() {
             </Box>
           </Box>
 
-          {/* Bottom: total count */}
-          <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-            {TOTAL} venues across the estate
-          </Typography>
         </Box>
 
         <Divider
