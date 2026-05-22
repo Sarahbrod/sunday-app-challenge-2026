@@ -197,25 +197,29 @@ const recommendations = [
   {
     id: 1, urgency: 'Today' as const,
     title: 'Fill the Edinburgh weekend rota',
-    detail: 'Saturday dinner and Sunday brunch both have open shifts. Each unfilled slot cuts around 120 covers from a fully-booked service.',
+    sub: '3 open shifts before Saturday and Sunday service',
+    venue: 'Edinburgh',
     impact: '~380 covers protected',
   },
   {
     id: 2, urgency: 'Today' as const,
     title: 'Restart the Covent Garden till',
-    detail: "A reboot and manual resync should resolve the 47-minute outage in under 10 minutes. End-of-day reporting is at risk until it's fixed.",
-    impact: 'Reporting accuracy restored',
+    sub: 'Reboot and resync takes under 10 minutes',
+    venue: 'Covent Garden',
+    impact: 'Reporting accuracy',
   },
   {
     id: 3, urgency: 'This week' as const,
-    title: 'Roll out the pre-service ritual to 4 more houses',
-    detail: "Shoreditch's daily gather is the clearest differentiator among top scorers. Edinburgh, Manchester, Kensington, and Battersea are the best candidates to adopt it next.",
+    title: 'Roll out the pre-service ritual',
+    sub: 'Edinburgh, Manchester, Kensington, and Battersea are ready',
+    venue: 'Estate',
     impact: 'Est. +0.3★ per venue',
   },
   {
     id: 4, urgency: 'This week' as const,
-    title: 'Run a drink attach nudge at underperforming venues',
-    detail: "Six houses are below 65% attach rate — the biggest revenue lever on the estate. A targeted prompt at the point of ordering could move the needle quickly.",
+    title: 'Push drink attach rate at 6 houses',
+    sub: 'All below 65% — biggest revenue lever on the estate',
+    venue: 'Estate',
     impact: 'Est. +£12K / month',
   },
 ];
@@ -457,38 +461,42 @@ export default function HomePage() {
 
           <Grid container spacing={2}>
 
-            {/* Priority Signals */}
+            {/* Combined signals + recommendations */}
             <Grid size={{ xs: 12, md: 8 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent sx={{ p: '20px !important' }}>
-                  <SectionLabel aside="5 items">Signals to act on</SectionLabel>
 
                   {/* Column headers */}
                   <Box sx={{
                     display: { xs: 'none', md: 'grid' },
-                    gridTemplateColumns: '76px 1fr 96px 88px',
+                    gridTemplateColumns: '88px 1fr 108px 88px',
                     gap: 1.5, pb: 1.25,
                     borderBottom: `1px solid ${C.grey300}`,
                   }}>
-                    {['Priority', 'Issue', 'Venue', 'Impact'].map((col) => (
+                    {['Priority', 'Item', 'Venue', 'Impact'].map((col) => (
                       <Typography key={col} sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
                         {col}
                       </Typography>
                     ))}
                   </Box>
 
-                  {/* Rows */}
-                  {signals.map((s, i) => (
+                  {/* ── Signals group label ── */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.25, pb: 0.25 }}>
+                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
+                      Signals to act on
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.5625rem', color: C.textMuted }}>· {signals.length}</Typography>
+                  </Box>
+
+                  {signals.map((s) => (
                     <Box key={s.id} sx={{
                       display: 'grid',
-                      gridTemplateColumns: { xs: 'auto 1fr', md: '76px 1fr 96px 88px' },
+                      gridTemplateColumns: { xs: 'auto 1fr', md: '88px 1fr 108px 88px' },
                       gap: { xs: 1.25, md: 1.5 },
-                      py: 1.75,
-                      borderBottom: i < signals.length - 1 ? `1px solid ${C.grey100}` : 'none',
+                      py: 1.5,
+                      borderBottom: `1px solid ${C.grey100}`,
                       alignItems: 'flex-start',
                     }}>
-
-                      {/* Priority */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {s.severity === 'high'
                           ? <WarningAmberRoundedIcon sx={{ fontSize: '0.9375rem', color: C.errorMain, flexShrink: 0 }} />
@@ -500,8 +508,6 @@ export default function HomePage() {
                           {s.severity === 'high' ? 'High' : s.severity === 'medium' ? 'Medium' : 'Low'}
                         </Typography>
                       </Box>
-
-                      {/* Issue */}
                       <Box>
                         <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.3 }}>
                           {s.title}
@@ -510,18 +516,60 @@ export default function HomePage() {
                           {s.sub}
                         </Typography>
                       </Box>
-
-                      {/* Venue — hidden on mobile */}
                       <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                         {s.venue}
                       </Typography>
-
-                      {/* Impact — hidden on mobile */}
                       <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                         {s.impactNote}
                       </Typography>
                     </Box>
                   ))}
+
+                  {/* ── Recommendations group label ── */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.75, pb: 0.25 }}>
+                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
+                      Recommended actions
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.5625rem', color: C.textMuted }}>· {recommendations.length}</Typography>
+                  </Box>
+
+                  {recommendations.map((r, i) => {
+                    const isToday = r.urgency === 'Today';
+                    return (
+                      <Box key={r.id} sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: 'auto 1fr', md: '88px 1fr 108px 88px' },
+                        gap: { xs: 1.25, md: 1.5 },
+                        py: 1.5,
+                        borderBottom: i < recommendations.length - 1 ? `1px solid ${C.grey100}` : 'none',
+                        alignItems: 'flex-start',
+                      }}>
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.875, py: 0.4, borderRadius: '99px', alignSelf: 'flex-start',
+                          bgcolor: isToday ? C.errorLight : C.warmLight,
+                        }}>
+                          <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
+                          <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1, whiteSpace: 'nowrap' }}>
+                            {r.urgency}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.3 }}>
+                            {r.title}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.45, letterSpacing: '-0.005em' }}>
+                            {r.sub}
+                          </Typography>
+                        </Box>
+                        <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                          {r.venue}
+                        </Typography>
+                        <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                          {r.impact}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+
                 </CardContent>
               </Card>
             </Grid>
@@ -563,72 +611,6 @@ export default function HomePage() {
           </Grid>
         </Box>
 
-
-        {/* ── Recommendations ─────────────────────────────────────────── */}
-        <Box className="fade-in delay-4" sx={{ mb: 4 }}>
-          <SectionLabel large>Recommendations</SectionLabel>
-          <Card>
-            <CardContent sx={{ p: '20px !important' }}>
-
-              {/* Column headers */}
-              <Box sx={{
-                display: { xs: 'none', md: 'grid' },
-                gridTemplateColumns: '96px 1fr 120px',
-                gap: 1.5, pb: 1.25,
-                borderBottom: `1px solid ${C.grey300}`,
-              }}>
-                {['When', 'Recommendation', 'Impact'].map((col) => (
-                  <Typography key={col} sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
-                    {col}
-                  </Typography>
-                ))}
-              </Box>
-
-              {/* Rows */}
-              {recommendations.map((r, i) => {
-                const isToday = r.urgency === 'Today';
-                return (
-                  <Box key={r.id} sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '96px 1fr 120px' },
-                    gap: { xs: 0.5, md: 1.5 },
-                    py: 1.75,
-                    borderBottom: i < recommendations.length - 1 ? `1px solid ${C.grey100}` : 'none',
-                    alignItems: 'flex-start',
-                  }}>
-
-                    {/* When */}
-                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625, px: 1, py: 0.375, borderRadius: '99px', alignSelf: { xs: 'flex-start', md: 'flex-start' },
-                      bgcolor: isToday ? C.errorLight : C.warmLight,
-                    }}>
-                      <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
-                      <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1, whiteSpace: 'nowrap' }}>
-                        {r.urgency}
-                      </Typography>
-                    </Box>
-
-                    {/* Recommendation */}
-                    <Box>
-                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.375 }}>
-                        {r.title}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em' }}>
-                        {r.detail}
-                      </Typography>
-                    </Box>
-
-                    {/* Impact */}
-                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                      {r.impact}
-                    </Typography>
-
-                  </Box>
-                );
-              })}
-
-            </CardContent>
-          </Card>
-        </Box>
 
         {/* ── Venue Performance ───────────────────────────────────────── */}
         <Box id="section-venues" className="fade-in delay-5" sx={{ mb: 4 }}>
