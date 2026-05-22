@@ -10,8 +10,6 @@ import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import LinearProgress from '@mui/material/LinearProgress';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import Sidebar from '@/components/Sidebar';
 import DishoomOpsCard from '@/components/DishoomOpsCard';
 import VenueMapComponent from '@/components/VenueMap';
@@ -25,7 +23,7 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import WineBarOutlinedIcon from '@mui/icons-material/WineBarOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import Collapse from '@mui/material/Collapse';
@@ -66,38 +64,73 @@ const C = {
   grey500:        '#B7B5BB',
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function buildSparkPath(pts: number[], w = 100, h = 28): string {
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
+  const range = max - min || 1;
+  const coords = pts.map((p, i) => ({
+    x: (i / (pts.length - 1)) * w,
+    y: h - ((p - min) / range) * h * 0.7 - h * 0.15,
+  }));
+  return coords.reduce((acc, p, i) => {
+    if (i === 0) return `M${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    const prev = coords[i - 1];
+    const cx = ((prev.x + p.x) / 2).toFixed(1);
+    return `${acc} C${cx},${prev.y.toFixed(1)} ${cx},${p.y.toFixed(1)} ${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+  }, '');
+}
+
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const metricsData = {
-  this_week: [
-    { label: 'Total Sales',        value: '£342K',  delta: '+6%',  positive: true,  sub: 'this week' },
-    { label: 'Payment Completion', value: '91%',    delta: '+2%',  positive: true,  sub: 'vs last week' },
-    { label: 'Tip Conversion',     value: '18%',    delta: '−1%',  positive: false, sub: 'vs last week' },
-    { label: 'Guest Satisfaction', value: '4.6',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
-  ],
-  last_week: [
-    { label: 'Total Sales',        value: '£323K',  delta: '+3%',  positive: true,  sub: 'last week' },
-    { label: 'Payment Completion', value: '89%',    delta: '+1%',  positive: true,  sub: 'vs prior week' },
-    { label: 'Tip Conversion',     value: '19%',    delta: '+1%',  positive: true,  sub: 'vs prior week' },
-    { label: 'Guest Satisfaction', value: '4.5',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
-  ],
-  this_month: [
-    { label: 'Total Sales',        value: '£1.42M', delta: '+8%',  positive: true,  sub: 'this month' },
-    { label: 'Payment Completion', value: '91%',    delta: '+3%',  positive: true,  sub: 'vs last month' },
-    { label: 'Tip Conversion',     value: '18%',    delta: '−2%',  positive: false, sub: 'vs last month' },
-    { label: 'Guest Satisfaction', value: '4.6',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
-  ],
-  last_month: [
-    { label: 'Total Sales',        value: '£1.31M', delta: '+3%',  positive: true,  sub: 'last month' },
-    { label: 'Payment Completion', value: '88%',    delta: '+2%',  positive: true,  sub: 'vs prior month' },
-    { label: 'Tip Conversion',     value: '20%',    delta: '−1%',  positive: false, sub: 'vs prior month' },
-    { label: 'Guest Satisfaction', value: '4.5',    delta: null,   positive: null,  sub: 'avg rating', starRating: true },
-    { label: 'Operational Health', value: 'Good',   delta: null,   positive: null,  sub: 'across all houses' },
-  ],
-};
+const perfMetrics = [
+  {
+    label:        'Revenue pacing',
+    value:        '£342K',
+    contextLabel: 'this week',
+    delta:        '+6%',
+    positive:     true  as true,
+    bottomLine:   '£2.1M MTD',
+    spark:        [58, 54, 62, 57, 66, 61, 68, 64, 71, 68],
+  },
+  {
+    label:        'Labour status',
+    value:        '18%',
+    contextLabel: 'vs target',
+    delta:        '−1%',
+    positive:     false as false,
+    bottomLine:   '+£1.2k risk today',
+    spark:        [14, 16, 15, 17, 16, 18, 17, 19, 18, 18],
+  },
+  {
+    label:        'Guest satisfaction',
+    value:        '4.6',
+    contextLabel: '',
+    delta:        '+0.2',
+    positive:     true  as true,
+    bottomLine:   'vs last week',
+    starRating:   true  as true,
+    spark:        null  as null,
+  },
+  {
+    label:        'Payment completion',
+    value:        '91%',
+    contextLabel: 'completion',
+    delta:        '+2%',
+    positive:     true  as true,
+    bottomLine:   '89% last week',
+    spark:        [80, 83, 82, 85, 84, 87, 88, 89, 90, 91],
+  },
+  {
+    label:        'Forecast (week)',
+    value:        '£640K',
+    contextLabel: 'forecast sales',
+    delta:        null  as null,
+    positive:     null  as null,
+    bottomLine:   'High labour pressure · Saturday dinner',
+    spark:        null  as null,
+  },
+];
 
 const signals = [
   {
@@ -136,27 +169,35 @@ const changes = [
 ];
 
 const venues = [
-  { name: "King's Cross", score: 94, satisfaction: 4.8, trend: 'up',     tier: 'top',   region: 'London',     highlights: ['Pre-service ritual running every shift', 'Cashless payments at 97%', 'Staff retention above 90% this quarter'] },
-  { name: 'Shoreditch',   score: 91, satisfaction: 4.7, trend: 'up',     tier: 'top',   region: 'London',     highlights: ['New brunch menu driving repeat visits up 18%', 'Team consistency at a record high', 'Tip conversion leading the estate at 24%'] },
-  { name: 'Liverpool St', score: 83, satisfaction: 4.4, trend: 'stable', tier: 'good',  region: 'London',     highlights: ['Lunch service consistently fully booked', 'Payment completion up 3% this month'] },
-  { name: 'Manchester',   score: 82, satisfaction: 4.4, trend: 'stable', tier: 'good',  region: 'Manchester', highlights: ['Guest satisfaction steady for six weeks', 'Lowest staff turnover outside London', 'Upsell rate on drinks above network average'] },
-  { name: 'Kensington',   score: 80, satisfaction: 4.3, trend: 'stable', tier: 'good',  region: 'London',     highlights: ['Weekend covers up 9% month-on-month', 'Strong return visit rate at 31%'] },
-  { name: 'Edinburgh',    score: 79, satisfaction: 4.3, trend: 'stable', tier: 'good',  region: 'Edinburgh',  highlights: ['Highest average spend per head outside London', 'Pre-service ritual adopted last month, scores improving'] },
-  { name: 'Battersea',    score: 78, satisfaction: 4.2, trend: 'stable', tier: 'good',  region: 'London',     highlights: ['Cashless adoption jumped 8% after recent push', 'Kitchen and front-of-house NPS aligned'] },
-  { name: 'Bristol',      score: 77, satisfaction: 4.2, trend: 'stable', tier: 'good',  region: 'Bristol',    highlights: ['Strongest opening quarter of any new location', 'Local press coverage driving walk-in covers'] },
-  { name: 'Birmingham',   score: 74, satisfaction: 4.2, trend: 'down',   tier: 'watch', region: 'Birmingham', highlights: ['Guest satisfaction holding despite staffing pressure', 'Lunch trade outperforming forecast'] },
-  { name: 'Carnaby',      score: 71, satisfaction: 4.1, trend: 'down',   tier: 'watch', region: 'London',     highlights: ['Brunch service scores above dinner', 'Payment adoption at 88%, above watch-list average'] },
-  { name: 'Covent Garden',score: 65, satisfaction: 4.0, trend: 'down',   tier: 'risk',  region: 'London',     highlights: ['Weekend lunch remains strong despite weekday dip'] },
+  { name: "King's Cross", score: 94, satisfaction: 4.8, trend: 'up',   vsAvg: '+14%', weeklyDelta:  2, tier: 'top',   region: 'London',     highlights: ['Pre-service ritual running every shift', 'Cashless payments at 97%', 'Staff retention above 90% this quarter'] },
+  { name: 'Shoreditch',   score: 91, satisfaction: 4.7, trend: 'up',   vsAvg: '+11%', weeklyDelta:  0, tier: 'top',   region: 'London',     highlights: ['New brunch menu driving repeat visits up 18%', 'Team consistency at a record high', 'Tip conversion leading the estate at 24%'] },
+  { name: 'Liverpool St', score: 83, satisfaction: 4.4, trend: 'flat', vsAvg:  '+3%', weeklyDelta:  1, tier: 'good',  region: 'London',     highlights: ['Lunch service consistently fully booked', 'Payment completion up 3% this month'] },
+  { name: 'Manchester',   score: 82, satisfaction: 4.4, trend: 'up',   vsAvg:  '+2%', weeklyDelta:  8, tier: 'good',  region: 'Manchester', highlights: ['Guest satisfaction steady for six weeks', 'Lowest staff turnover outside London', 'Upsell rate on drinks above network average'] },
+  { name: 'Kensington',   score: 80, satisfaction: 4.3, trend: 'down', vsAvg:  '-1%', weeklyDelta: -2, tier: 'good',  region: 'London',     highlights: ['Weekend covers up 9% month-on-month', 'Strong return visit rate at 31%'] },
+  { name: 'Edinburgh',    score: 79, satisfaction: 4.3, trend: 'flat', vsAvg:  '-1%', weeklyDelta:  5, tier: 'good',  region: 'Edinburgh',  highlights: ['Highest average spend per head outside London', 'Pre-service ritual adopted last month, scores improving'] },
+  { name: 'Battersea',    score: 78, satisfaction: 4.2, trend: 'down', vsAvg:  '-4%', weeklyDelta: -3, tier: 'good',  region: 'London',     highlights: ['Cashless adoption jumped 8% after recent push', 'Kitchen and front-of-house NPS aligned'] },
+  { name: 'Bristol',      score: 77, satisfaction: 4.2, trend: 'flat', vsAvg:  '-4%', weeklyDelta:  3, tier: 'good',  region: 'Bristol',    highlights: ['Strongest opening quarter of any new location', 'Local press coverage driving walk-in covers'] },
+  { name: 'Birmingham',   score: 74, satisfaction: 4.2, trend: 'down', vsAvg:  '-7%', weeklyDelta: -5, tier: 'watch', region: 'Birmingham', highlights: ['Guest satisfaction holding despite staffing pressure', 'Lunch trade outperforming forecast'] },
+  { name: 'Carnaby',      score: 71, satisfaction: 4.1, trend: 'down', vsAvg: '-11%', weeklyDelta: -7, tier: 'watch', region: 'London',     highlights: ['Brunch service scores above dinner', 'Payment adoption at 88%, above watch-list average'] },
+  { name: 'Covent Garden',score: 65, satisfaction: 4.0, trend: 'down', vsAvg: '-19%', weeklyDelta: -4, tier: 'risk',  region: 'London',     highlights: ['Weekend lunch remains strong despite weekday dip'] },
 ];
 
-const REGIONS = [...new Set(venues.map(v => v.region))].sort();
+type SortView = 'performance' | 'risk' | 'improvement';
+
+const SORT_TABS: { key: SortView; label: string }[] = [
+  { key: 'performance', label: 'By performance' },
+  { key: 'risk',        label: 'By risk' },
+  { key: 'improvement', label: 'By improvement' },
+];
+
+const TIER_ORDER: Record<string, number> = { risk: 0, watch: 1, good: 2, top: 3 };
 
 const drivers = [
   {
-    title: 'Payment Adoption', metric: '91%', metricSub: 'network average', impact: 'High' as const,
-    insight: "Every 5% lift in cashless adoption adds roughly 2.3% to revenue per cover. King's Cross and Shoreditch are already above 95%, and the rest have real ground to gain.",
-    note: "King's Cross and Shoreditch out in front",
-    Icon: PaymentsOutlinedIcon,
+    title: 'Drink Attach Rate', metric: '62%', metricSub: 'covers ordering a drink', impact: 'High' as const,
+    insight: "Covers that include a drink — cocktail, wine, or chai — spend 38% more on average. Houses hitting 75%+ attach consistently lead on total revenue. Six locations are below 65% and have real ground to gain.",
+    note: "King's Cross leads the estate at 79%",
+    Icon: WineBarOutlinedIcon,
   },
   {
     title: 'Team Consistency', metric: '≤15%', metricSub: 'staff turnover target', impact: 'High' as const,
@@ -188,24 +229,28 @@ const menuData = {
       title: 'Naan alongside',
       detail: 'A prompt to add a naan with any main at £2.50. Only 14% of guests are taking one; a well-placed nudge at ordering could more than double that.',
       impact: 'Est. +£8K / month',
+      iconBg: '#FDF3FD', iconColor: '#EA41E2',
     },
     {
       icon: WbSunnyOutlinedIcon,
       title: 'Set brunch menu',
       detail: 'A three-course set at £28, something to savour slowly. Targets the repeat visit gap at Carnaby and Covent Garden with a format guests want to return for.',
       impact: 'Addresses repeat visit decline',
+      iconBg: '#FDF3FD', iconColor: '#EA41E2',
     },
     {
       icon: LocalCafeOutlinedIcon,
       title: 'Chai with dessert',
       detail: 'Complimentary chai with every dessert for loyalty members. A small gesture that makes the end of a meal feel genuinely looked after, and brings guests into the app at almost no cost.',
       impact: 'Boosts loyalty engagement',
+      iconBg: '#FDF3FD', iconColor: '#EA41E2',
     },
     {
       icon: CardGiftcardOutlinedIcon,
       title: 'Birthday dining offer',
       detail: 'A personalised invite for loyalty members in the month of their birthday. Early data from King\'s Cross shows a 34% redemption rate and spend 22% above the average cover.',
       impact: 'Est. +£5K / month',
+      iconBg: '#FDF3FD', iconColor: '#EA41E2',
     },
   ],
 };
@@ -255,15 +300,19 @@ export default function HomePage() {
   useEffect(() => setMounted(true), []);
   const [activeTier, setActiveTier] = useState<Tier | null>(null);
   const [expandedVenue, setExpandedVenue] = useState<string | null>(null);
-  const [activeRegion, setActiveRegion] = useState<string | null>('London');
-  const [snapshotRange, setSnapshotRange] = useState<keyof typeof metricsData>('this_week');
+  const [sortView, setSortView] = useState<SortView>('performance');
 
-  const metrics = metricsData[snapshotRange];
+  const sortedVenues = [...venues].sort((a, b) => {
+    if (sortView === 'risk')        return TIER_ORDER[a.tier] - TIER_ORDER[b.tier] || a.score - b.score;
+    if (sortView === 'improvement') return b.weeklyDelta - a.weeklyDelta;
+    return b.score - a.score;
+  });
 
-  const filteredVenues = venues.filter(v =>
-    (activeRegion == null || v.region === activeRegion) &&
-    (activeTier == null || v.tier === activeTier)
+  const filteredVenues = sortedVenues.filter(v =>
+    activeTier == null || v.tier === activeTier
   );
+
+  const mapActiveTiers: Tier[] | null = sortView === 'risk' ? ['risk', 'watch'] : null;
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: C.grey100 }}>
@@ -282,13 +331,77 @@ export default function HomePage() {
         </Box>
 
         {/* ── Status banner ────────────────────────────────────────────── */}
-        <Box className="fade-in delay-2" sx={{ mb: 3 }}>
+        <Box className="fade-in delay-2" sx={{ mb: 4 }}>
           <DishoomOpsCard />
         </Box>
 
+        {/* ── Performance snapshot cards ───────────────────────────────── */}
+        <Box className="fade-in delay-3" sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
+          {perfMetrics.map((m) => {
+            const sparkPath = m.spark ? buildSparkPath(m.spark) : null;
+            return (
+              <Card key={m.label} sx={{ flex: '1 1 0', minWidth: { xs: 'calc(50% - 8px)', md: 0 }, p: 0, overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, pt: 2.5, pb: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  {/* Title */}
+                  <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.005em', mb: 1.25, lineHeight: 1 }}>
+                    {m.label}
+                  </Typography>
+
+                  {/* Value row */}
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, flexWrap: 'wrap' }}>
+                    <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: C.textPrimary, letterSpacing: '-0.045em', lineHeight: 1 }}>
+                      {m.value}
+                    </Typography>
+                    {m.contextLabel && (
+                      <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, letterSpacing: '-0.005em', lineHeight: 1 }}>
+                        {m.contextLabel}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Star rating (guest satisfaction) */}
+                  {m.starRating && (
+                    <Box sx={{ display: 'flex', gap: '2px', mt: 0.875, mb: 0.25 }}>
+                      {[1, 2, 3, 4].map((i) => (
+                        <StarRoundedIcon key={i} sx={{ fontSize: '0.9375rem', color: '#E8A020' }} />
+                      ))}
+                      <StarRoundedIcon sx={{ fontSize: '0.9375rem', color: '#E8A020', opacity: 0.22 }} />
+                    </Box>
+                  )}
+
+                  {/* Sparkline */}
+                  {sparkPath && (
+                    <Box sx={{ my: 1.25 }}>
+                      <svg width="100%" viewBox="0 0 100 28" preserveAspectRatio="none" style={{ display: 'block', height: 28 }}>
+                        <path d={sparkPath} fill="none" stroke={m.positive === false ? C.errorMain : '#C8C8C8'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </Box>
+                  )}
+
+                  {/* Spacer to push bottom line down */}
+                  {!sparkPath && !m.starRating && <Box sx={{ flex: 1 }} />}
+                  {m.starRating && <Box sx={{ flex: 1 }} />}
+
+                  {/* Bottom line */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: sparkPath ? 0 : 1.5, pt: 1.5, borderTop: `1px solid ${C.grey300}` }}>
+                    {m.delta && (
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: m.positive ? '#2E7D52' : C.errorMain, letterSpacing: '-0.01em', lineHeight: 1, flexShrink: 0 }}>
+                        {m.delta}
+                      </Typography>
+                    )}
+                    <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.005em', lineHeight: 1.3 }}>
+                      {m.bottomLine}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Card>
+            );
+          })}
+        </Box>
+
         {/* ── Priority Signals + Recent Changes ───────────────────────── */}
-        <Box className="fade-in delay-3" sx={{ mb: 4 }}>
-          <SectionLabel large>What matters today</SectionLabel>
+        <Box id="section-focus" className="fade-in delay-3" sx={{ mb: 4 }}>
+          <SectionLabel large>Focus areas</SectionLabel>
 
           <Grid container spacing={2}>
 
@@ -368,63 +481,9 @@ export default function HomePage() {
           </Grid>
         </Box>
 
-        {/* ── Metrics ─────────────────────────────────────────────────── */}
-        <Box className="fade-in delay-4" sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-            <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em', lineHeight: 1 }}>
-              Performance snapshot
-            </Typography>
-            <Select
-              value={snapshotRange}
-              onChange={(e) => setSnapshotRange(e.target.value as keyof typeof metricsData)}
-              size="small"
-              sx={{
-                fontSize: '0.75rem', fontWeight: 500, color: C.textSecondary, height: 30,
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: C.grey300 },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: C.grey500 },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: C.grey500, borderWidth: '1px' },
-                '& .MuiSelect-select': { py: 0.5, pl: 1.25, pr: '28px !important', fontSize: '0.75rem' },
-              }}
-            >
-              <MenuItem value="this_week"  sx={{ fontSize: '0.8125rem' }}>This week</MenuItem>
-              <MenuItem value="last_week"  sx={{ fontSize: '0.8125rem' }}>Last week</MenuItem>
-              <MenuItem value="this_month" sx={{ fontSize: '0.8125rem' }}>This month</MenuItem>
-              <MenuItem value="last_month" sx={{ fontSize: '0.8125rem' }}>Last month</MenuItem>
-            </Select>
-          </Box>
-          <Grid container spacing={1.5}>
-            {metrics.map((m) => (
-              <Grid key={m.label} size={{ xs: 12, sm: 6, md: 'grow' }}>
-                <Card sx={{ height: '100%', cursor: 'default' }}>
-                  <CardContent sx={{ p: '18px !important' }}>
-                    <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: C.textMuted, mb: 1.25, display: 'block' }}>
-                      {m.label}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                      <Typography sx={{ fontSize: '1.625rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        {m.value}
-                      </Typography>
-                      {(m as typeof m & { starRating?: boolean }).starRating && (
-                        <StarRoundedIcon sx={{ fontSize: '0.9375rem', color: '#E8A020', flexShrink: 0 }} />
-                      )}
-                      {m.delta && (
-                        <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: m.positive ? C.successDark : C.errorDark, letterSpacing: '0.01em' }}>
-                          {m.delta}
-                        </Typography>
-                      )}
-                    </Box>
-                    <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                      {m.sub}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
 
         {/* ── Venue Performance ───────────────────────────────────────── */}
-        <Box className="fade-in delay-5" sx={{ mb: 4 }}>
+        <Box id="section-venues" className="fade-in delay-5" sx={{ mb: 4 }}>
           <Card>
             <CardContent>
 
@@ -435,32 +494,28 @@ export default function HomePage() {
                     House Performance
                   </Typography>
                   <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                    Showing {filteredVenues.length} of {venues.length} houses
-                    {activeRegion ? ` · ${activeRegion}` : ''}
+                    {sortView === 'performance' && 'Sorted by score'}
+                    {sortView === 'risk' && 'Sorted by risk · worst first'}
+                    {sortView === 'improvement' && 'Sorted by weekly improvement'}
                     {activeTier ? ` · ${TIER_STYLE[activeTier].label}` : ''}
                   </Typography>
                 </Box>
 
-                {/* Region picker */}
-                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexWrap: { xs: 'nowrap', sm: 'wrap' }, justifyContent: { xs: 'flex-start', sm: 'flex-end' }, flexShrink: 0, overflowX: { xs: 'auto', sm: 'visible' }, pb: { xs: 0.5, sm: 0 }, width: { xs: '100%', sm: 'auto' } }}>
-                  {[{ label: 'All', value: null as string | null, count: venues.length }, ...REGIONS.map(r => ({ label: r, value: r, count: venues.filter(v => v.region === r).length }))].map(({ label, value, count }) => {
-                    const isSelected = activeRegion === value;
-                    const isDimmed = activeRegion !== null && !isSelected;
+                {/* Sort tabs */}
+                <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', flexShrink: 0 }}>
+                  {SORT_TABS.map(({ key, label }) => {
+                    const isSelected = sortView === key;
                     return (
-                      <Box key={label} onClick={() => setActiveRegion(isSelected && value !== null ? null : value)}
-                        sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 1.125, py: 0.5, borderRadius: '99px', cursor: 'pointer', userSelect: 'none',
+                      <Box key={key} onClick={() => { setSortView(key); setActiveTier(null); }}
+                        sx={{ display: 'inline-flex', alignItems: 'center', px: 1.25, py: 0.5, borderRadius: '99px', cursor: 'pointer', userSelect: 'none',
                           border: `1.5px solid ${isSelected ? C.textPrimary : C.grey300}`,
                           backgroundColor: isSelected ? C.textPrimary : 'transparent',
-                          opacity: isDimmed ? 0.4 : 1,
                           transition: 'all 0.15s ease',
-                          '&:hover': { opacity: 1, borderColor: C.textPrimary, backgroundColor: isSelected ? C.textPrimary : C.grey100 },
+                          '&:hover': { borderColor: C.textPrimary, backgroundColor: isSelected ? C.textPrimary : C.grey100 },
                         }}
                       >
-                        <Typography sx={{ fontSize: '0.6875rem', fontWeight: isSelected ? 600 : 400, color: isSelected ? '#fff' : C.textSecondary, lineHeight: 1, letterSpacing: '-0.005em' }}>
+                        <Typography sx={{ fontSize: '0.6875rem', fontWeight: isSelected ? 600 : 400, color: isSelected ? '#fff' : C.textSecondary, lineHeight: 1, letterSpacing: '-0.005em', whiteSpace: 'nowrap' }}>
                           {label}
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.5625rem', color: isSelected ? 'rgba(255,255,255,0.65)' : C.textMuted, lineHeight: 1 }}>
-                          {count}
                         </Typography>
                       </Box>
                     );
@@ -470,12 +525,11 @@ export default function HomePage() {
 
               <Grid container spacing={3}>
 
-                {/* Left: Map + tier key + full list */}
+                {/* Left: Map */}
                 <Grid size={{ xs: 12, md: 7 }}>
 
-                  {/* Map with overlaid legend */}
                   <Box sx={{ position: 'relative', height: 360, borderRadius: '10px', overflow: 'hidden', border: `1px solid rgba(0,0,0,0.06)` }}>
-                    {mounted && <VenueMapComponent activeTier={activeTier} activeRegion={activeRegion} />}
+                    {mounted && <VenueMapComponent activeTier={activeTier} activeTiers={mapActiveTiers} />}
 
                     {/* Floating tier legend */}
                     <Box sx={{
@@ -486,7 +540,7 @@ export default function HomePage() {
                       px: 0.5, py: 0.5,
                       maxWidth: 'calc(100% - 24px)',
                     }}>
-                      {(Object.entries(TIER_STYLE) as [Tier, typeof TIER_STYLE[Tier]][]).map(([tier, s], idx, arr) => {
+                      {(Object.entries(TIER_STYLE) as [Tier, typeof TIER_STYLE[Tier]][]).map(([tier, s]) => {
                         const count = venues.filter(v => v.tier === tier).length;
                         const isSelected = activeTier === tier;
                         const isDimmed = activeTier !== null && !isSelected;
@@ -515,10 +569,9 @@ export default function HomePage() {
                     </Box>
                   </Box>
 
-                  {/* Hint text */}
                   <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                      Select a tier to filter the map and leaderboard
+                      Select a tier to refine the map
                     </Typography>
                     {activeTier && (
                       <Typography onClick={() => setActiveTier(null)} sx={{ fontSize: '0.6875rem', color: C.textSecondary, cursor: 'pointer', ml: 0.5, '&:hover': { color: C.textPrimary } }}>
@@ -526,14 +579,15 @@ export default function HomePage() {
                       </Typography>
                     )}
                   </Box>
-
                 </Grid>
 
                 {/* Right: Top performers leaderboard */}
                 <Grid size={{ xs: 12, md: 5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.75 }}>
                     <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
-                      Leading the way{activeRegion ? ` · ${activeRegion}` : ''}
+                      {sortView === 'performance' && 'Leading the way'}
+                      {sortView === 'risk' && 'Most at risk'}
+                      {sortView === 'improvement' && 'Most improved'}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
@@ -614,7 +668,7 @@ export default function HomePage() {
 
         {/* ── Performance Drivers ─────────────────────────────────────── */}
         <Box className="fade-in delay-6" sx={{ mb: 4 }}>
-          <SectionLabel large>Performance levers</SectionLabel>
+          <SectionLabel large>Performance drivers</SectionLabel>
           <Grid container spacing={2}>
             {drivers.map((d) => {
               const isHigh = d.impact === 'High';
@@ -628,10 +682,10 @@ export default function HomePage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box sx={{
                             width: 32, height: 32, borderRadius: '8px', flexShrink: 0,
-                            bgcolor: isHigh ? C.successLight : C.grey100,
+                            bgcolor: isHigh ? '#EDEEFC' : C.grey100,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                           }}>
-                            <d.Icon sx={{ fontSize: '1rem', color: isHigh ? C.successMain : C.textSecondary }} />
+                            <d.Icon sx={{ fontSize: '1rem', color: isHigh ? '#2E377E' : C.textSecondary }} />
                           </Box>
                           <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                             {d.title}
@@ -642,8 +696,8 @@ export default function HomePage() {
                           size="small"
                           sx={{
                             height: 18, flexShrink: 0, ml: 1,
-                            bgcolor: isHigh ? C.successLight : C.grey100,
-                            color: isHigh ? C.successDark : C.textSecondary,
+                            bgcolor: isHigh ? '#EDEEFC' : C.grey100,
+                            color: isHigh ? '#2E377E' : C.textSecondary,
                             fontWeight: 600, fontSize: '0.5rem', letterSpacing: '0.05em', textTransform: 'uppercase',
                             '& .MuiChip-label': { px: '6px' },
                           }}
@@ -682,7 +736,7 @@ export default function HomePage() {
         </Box>
 
         {/* ── Menu Highlights ─────────────────────────────────────────── */}
-        <Box className="fade-in delay-7" sx={{ mb: 4 }}>
+        <Box id="section-menu" className="fade-in delay-7" sx={{ mb: 4 }}>
           <SectionLabel large action={
             <Button size="small" variant="text" sx={{ fontSize: '0.75rem', fontWeight: 500, color: C.textSecondary, textTransform: 'none', letterSpacing: '-0.005em', px: 1, minWidth: 0, '&:hover': { backgroundColor: C.grey100, color: C.textPrimary } }}>
               View all
@@ -693,58 +747,44 @@ export default function HomePage() {
               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: 'stretch', gap: 0 }}>
 
                 {/* Left: menu movement */}
-                <Box sx={{ width: { xs: '100%', md: '42%' }, flexShrink: 0, pr: { xs: 0, md: 3 }, pb: { xs: 3, md: 0 } }}>
+                <Box sx={{ width: { xs: '100%', md: '36%' }, flexShrink: 0, pr: { xs: 0, md: 3 }, pb: { xs: 3, md: 0 }, display: 'flex', flexDirection: 'column' }}>
 
                   {/* Trending up */}
-                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5 }}>
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.25 }}>
                     Trending up
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    {(() => {
-                      const maxVal = Math.max(...menuData.trending.map(i => parseFloat(i.delta.replace('+', '').replace('%', ''))));
-                      return menuData.trending.map((item) => {
-                        const val = parseFloat(item.delta.replace('+', '').replace('%', ''));
-                        return (
-                          <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                            <Box component="img" src={item.img} alt={item.name} sx={{ width: 36, height: 36, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.25 }}>
-                                <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500 }}>{item.name}</Typography>
-                                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: '#2E7D52', letterSpacing: '-0.01em' }}>{item.delta}</Typography>
-                              </Box>
-                              <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em', mb: 0.625 }}>{item.orders.toLocaleString()} orders</Typography>
-                              <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: '#2E7D52', borderRadius: 2 } }} />
-                            </Box>
-                          </Box>
-                        );
-                      });
-                    })()}
+                    {menuData.trending.map((item, i) => (
+                      <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: i < menuData.trending.length - 1 ? `1px solid ${C.grey300}` : 'none' }}>
+                        <Box component="img" src={item.img} alt={item.name} sx={{ width: 34, height: 34, borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500, mb: 0.25 }}>{item.name}</Typography>
+                          <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>{item.orders.toLocaleString()} orders</Typography>
+                        </Box>
+                        <Box sx={{ px: 1, py: 0.375, borderRadius: '6px', backgroundColor: '#D1FAE5', flexShrink: 0 }}>
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#065F46', letterSpacing: '-0.01em', lineHeight: 1 }}>{item.delta}</Typography>
+                        </Box>
+                      </Box>
+                    ))}
                   </Box>
 
                   {/* Trending down */}
-                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5, mt: 2.5 }}>
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.25, mt: 2.25 }}>
                     Trending down
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    {(() => {
-                      const maxVal = Math.max(...menuData.declining.map(i => Math.abs(parseFloat(i.delta.replace('−', '-').replace('%', '')))));
-                      return menuData.declining.map((item) => {
-                        const val = Math.abs(parseFloat(item.delta.replace('−', '-').replace('%', '')));
-                        return (
-                          <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                            <Box component="img" src={item.img} alt={item.name} sx={{ width: 36, height: 36, borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 0.25 }}>
-                                <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500 }}>{item.name}</Typography>
-                                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 700, color: C.errorMain, letterSpacing: '-0.01em' }}>{item.delta}</Typography>
-                              </Box>
-                              <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em', mb: 0.625 }}>{item.orders.toLocaleString()} orders</Typography>
-                              <LinearProgress variant="determinate" value={(val / maxVal) * 100} sx={{ height: 3, borderRadius: 2, backgroundColor: C.grey100, '& .MuiLinearProgress-bar': { backgroundColor: C.errorMain, borderRadius: 2 } }} />
-                            </Box>
-                          </Box>
-                        );
-                      });
-                    })()}
+                    {menuData.declining.map((item, i) => (
+                      <Box key={item.name} sx={{ py: 1, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: i < menuData.declining.length - 1 ? `1px solid ${C.grey300}` : 'none' }}>
+                        <Box component="img" src={item.img} alt={item.name} sx={{ width: 34, height: 34, borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography sx={{ fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', fontWeight: 500, mb: 0.25 }}>{item.name}</Typography>
+                          <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>{item.orders.toLocaleString()} orders</Typography>
+                        </Box>
+                        <Box sx={{ px: 1, py: 0.375, borderRadius: '6px', backgroundColor: '#FEE2E2', flexShrink: 0 }}>
+                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#991B1B', letterSpacing: '-0.01em', lineHeight: 1 }}>{item.delta}</Typography>
+                        </Box>
+                      </Box>
+                    ))}
                   </Box>
 
                 </Box>
@@ -753,24 +793,26 @@ export default function HomePage() {
                 <Divider sx={{ borderColor: C.grey300, display: { xs: 'block', md: 'none' } }} />
 
                 {/* Right: opportunities */}
-                <Box sx={{ flex: 1, pl: { xs: 0, md: 3 }, pt: { xs: 3, md: 0 }, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.5 }}>
+                <Box sx={{ flex: 1, pl: { xs: 0, md: 3 }, pt: { xs: 3, md: 0 }, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                  <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, lineHeight: 1, mb: 1.25 }}>
                     Opportunities
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {menuData.opportunities.map((o) => (
-                      <Box key={o.title} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.25, backgroundColor: C.grey100, border: `1px solid ${C.grey300}`, borderRadius: '10px', p: '12px 14px' }}>
-                        <Box sx={{ width: 30, height: 30, borderRadius: '7px', backgroundColor: '#fff', border: `1px solid ${C.grey300}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: '1px' }}>
-                          <o.icon sx={{ fontSize: '0.9375rem', color: C.textSecondary }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                    {menuData.opportunities.map((o, i) => (
+                      <Box key={o.title} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 0.875, borderBottom: i < menuData.opportunities.length - 1 ? `1px solid ${C.grey300}` : 'none' }}>
+                        <Box sx={{ width: 32, height: 32, borderRadius: '8px', backgroundColor: o.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: '1px' }}>
+                          <o.icon sx={{ fontSize: '0.9375rem', color: o.iconColor }} />
                         </Box>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, mb: 0.375 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.375, flexWrap: 'wrap' }}>
                             <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                               {o.title}
                             </Typography>
-                            <Typography sx={{ fontSize: '0.6875rem', fontWeight: 500, color: C.textMuted, letterSpacing: '-0.005em', flexShrink: 0, lineHeight: 1.3, pt: '1px' }}>
-                              {o.impact}
-                            </Typography>
+                            <Box sx={{ px: 0.875, py: 0.25, borderRadius: '5px', backgroundColor: o.impact.includes('£') ? '#D1FAE5' : C.grey100, flexShrink: 0 }}>
+                              <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.02em', color: o.impact.includes('£') ? '#065F46' : C.textSecondary, lineHeight: 1 }}>
+                                {o.impact}
+                              </Typography>
+                            </Box>
                           </Box>
                           <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em' }}>
                             {o.detail}

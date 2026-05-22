@@ -1,4 +1,5 @@
-export type Tier = 'top' | 'good' | 'watch' | 'risk';
+export type Tier    = 'top' | 'good' | 'watch' | 'risk';
+export type TrendDir = 'up' | 'flat' | 'down';
 
 export interface MapVenue {
   name: string;
@@ -8,20 +9,23 @@ export interface MapVenue {
   satisfaction: number;
   tier: Tier;
   region: string;
+  trend: TrendDir;
+  vsAvg: string;
+  weeklyDelta: number; // positive = improving this week
 }
 
 export const ALL_VENUES: MapVenue[] = [
-  { name: "King's Cross",  lat: 51.5351, lng: -0.1248, score: 94, satisfaction: 4.8, tier: 'top',   region: 'London'     },
-  { name: 'Shoreditch',    lat: 51.5231, lng: -0.0748, score: 91, satisfaction: 4.7, tier: 'top',   region: 'London'     },
-  { name: 'Liverpool St',  lat: 51.5178, lng: -0.1090, score: 83, satisfaction: 4.4, tier: 'good',  region: 'London'     },
-  { name: 'Manchester',    lat: 53.4836, lng: -2.2493, score: 82, satisfaction: 4.4, tier: 'good',  region: 'Manchester' },
-  { name: 'Kensington',    lat: 51.4988, lng: -0.1943, score: 80, satisfaction: 4.3, tier: 'good',  region: 'London'     },
-  { name: 'Edinburgh',     lat: 55.9528, lng: -3.1872, score: 79, satisfaction: 4.3, tier: 'good',  region: 'Edinburgh'  },
-  { name: 'Battersea',     lat: 51.4835, lng: -0.1440, score: 78, satisfaction: 4.2, tier: 'good',  region: 'London'     },
-  { name: 'Bristol',       lat: 51.4545, lng: -2.5879, score: 77, satisfaction: 4.2, tier: 'good',  region: 'Bristol'    },
-  { name: 'Birmingham',    lat: 52.4796, lng: -1.9026, score: 74, satisfaction: 4.2, tier: 'watch', region: 'Birmingham' },
-  { name: 'Carnaby',       lat: 51.5131, lng: -0.1385, score: 71, satisfaction: 4.1, tier: 'watch', region: 'London'     },
-  { name: 'Covent Garden', lat: 51.5131, lng: -0.1260, score: 65, satisfaction: 4.0, tier: 'risk',  region: 'London'     },
+  { name: "King's Cross",  lat: 51.5351, lng: -0.1248, score: 94, satisfaction: 4.8, tier: 'top',   region: 'London',     trend: 'up',   vsAvg: '+14%', weeklyDelta:  2 },
+  { name: 'Shoreditch',    lat: 51.5231, lng: -0.0748, score: 91, satisfaction: 4.7, tier: 'top',   region: 'London',     trend: 'up',   vsAvg: '+11%', weeklyDelta:  0 },
+  { name: 'Liverpool St',  lat: 51.5178, lng: -0.1090, score: 83, satisfaction: 4.4, tier: 'good',  region: 'London',     trend: 'flat', vsAvg:  '+3%', weeklyDelta:  1 },
+  { name: 'Manchester',    lat: 53.4836, lng: -2.2493, score: 82, satisfaction: 4.4, tier: 'good',  region: 'Manchester', trend: 'up',   vsAvg:  '+2%', weeklyDelta:  8 },
+  { name: 'Kensington',    lat: 51.4988, lng: -0.1943, score: 80, satisfaction: 4.3, tier: 'good',  region: 'London',     trend: 'down', vsAvg:  '-1%', weeklyDelta: -2 },
+  { name: 'Edinburgh',     lat: 55.9528, lng: -3.1872, score: 79, satisfaction: 4.3, tier: 'good',  region: 'Edinburgh',  trend: 'flat', vsAvg:  '-1%', weeklyDelta:  5 },
+  { name: 'Battersea',     lat: 51.4835, lng: -0.1440, score: 78, satisfaction: 4.2, tier: 'good',  region: 'London',     trend: 'down', vsAvg:  '-4%', weeklyDelta: -3 },
+  { name: 'Bristol',       lat: 51.4545, lng: -2.5879, score: 77, satisfaction: 4.2, tier: 'good',  region: 'Bristol',    trend: 'flat', vsAvg:  '-4%', weeklyDelta:  3 },
+  { name: 'Birmingham',    lat: 52.4796, lng: -1.9026, score: 74, satisfaction: 4.2, tier: 'watch', region: 'Birmingham', trend: 'down', vsAvg:  '-7%', weeklyDelta: -5 },
+  { name: 'Carnaby',       lat: 51.5131, lng: -0.1385, score: 71, satisfaction: 4.1, tier: 'watch', region: 'London',     trend: 'down', vsAvg: '-11%', weeklyDelta: -7 },
+  { name: 'Covent Garden', lat: 51.5131, lng: -0.1260, score: 65, satisfaction: 4.0, tier: 'risk',  region: 'London',     trend: 'down', vsAvg: '-19%', weeklyDelta: -4 },
 ];
 
 export const TIER_STYLE: Record<Tier, {

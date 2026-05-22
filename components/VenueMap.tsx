@@ -7,16 +7,19 @@ import type { Tier } from './venueData';
 
 interface VenueMapProps {
   activeTier?: Tier | null;
+  activeTiers?: Tier[] | null;
   activeRegion?: string | null;
 }
 
-export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
+export default function VenueMap({ activeTier, activeTiers, activeRegion }: VenueMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const activeTierRef = useRef(activeTier);
+  const activeTiersRef = useRef(activeTiers);
   const activeRegionRef = useRef(activeRegion);
   useEffect(() => { activeTierRef.current = activeTier; }, [activeTier]);
+  useEffect(() => { activeTiersRef.current = activeTiers; }, [activeTiers]);
   useEffect(() => { activeRegionRef.current = activeRegion; }, [activeRegion]);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
         scrollWheelZoom: false,
       });
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map);
+      L.control.zoom({ position: 'topright' }).addTo(map);
 
       L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
@@ -107,14 +110,17 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
         markersRef.current.push(marker);
       });
 
-      const t = activeTierRef.current;
-      const r = activeRegionRef.current;
+      const t  = activeTierRef.current;
+      const ts = activeTiersRef.current;
+      const r  = activeRegionRef.current;
+      const tierMatch = (v: (typeof ALL_VENUES)[0]) =>
+        ts != null ? ts.includes(v.tier) : (t == null || t === v.tier);
       ALL_VENUES.forEach((v, i) => {
-        const visible = (t == null || t === v.tier) && (r == null || r === v.region);
+        const visible = tierMatch(v) && (r == null || r === v.region);
         if (!visible) markersRef.current[i]?.remove();
       });
       const initialVisible = ALL_VENUES.filter(v =>
-        (t == null || t === v.tier) && (r == null || r === v.region)
+        tierMatch(v) && (r == null || r === v.region)
       );
       const boundsVenues = initialVisible.length > 0 ? initialVisible : ALL_VENUES;
       map.fitBounds(
@@ -145,12 +151,13 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
     const map = mapRef.current;
     if (!map) return;
 
+    const tierMatch = (v: (typeof ALL_VENUES)[0]) =>
+      activeTiers != null ? activeTiers.includes(v.tier) : (activeTier == null || activeTier === v.tier);
+
     ALL_VENUES.forEach((v, i) => {
       const marker = markersRef.current[i];
       if (!marker) return;
-      const visible =
-        (activeTier == null || activeTier === v.tier) &&
-        (activeRegion == null || activeRegion === v.region);
+      const visible = tierMatch(v) && (activeRegion == null || activeRegion === v.region);
       if (visible && !map.hasLayer(marker)) marker.addTo(map);
       if (!visible && map.hasLayer(marker)) marker.remove();
     });
@@ -158,15 +165,14 @@ export default function VenueMap({ activeTier, activeRegion }: VenueMapProps) {
     import('leaflet').then((mod) => {
       const L = mod.default ?? (window as unknown as { L: typeof import('leaflet') }).L;
       const visible = ALL_VENUES.filter(v =>
-        (activeTier == null || activeTier === v.tier) &&
-        (activeRegion == null || activeRegion === v.region)
+        tierMatch(v) && (activeRegion == null || activeRegion === v.region)
       );
       if (visible.length > 0) {
         const bounds = L.latLngBounds(visible.map(v => [v.lat, v.lng] as [number, number]));
         map.flyToBounds(bounds, { padding: [60, 60], duration: 0.5 });
       }
     });
-  }, [activeTier, activeRegion]);
+  }, [activeTier, activeTiers, activeRegion]);
 
   return (
     <>

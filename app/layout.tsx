@@ -11,6 +11,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      {/* eslint-disable-next-line @next/next/no-head-element */}
+      <head>
+        {/* figma capture — remove after export */}
+        <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+      </head>
       <body>
         <ThemeRegistry>{children}</ThemeRegistry>
       </body>
