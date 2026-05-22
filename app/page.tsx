@@ -567,48 +567,67 @@ export default function HomePage() {
         {/* ── Recommendations ─────────────────────────────────────────── */}
         <Box className="fade-in delay-4" sx={{ mb: 4 }}>
           <SectionLabel large>Recommendations</SectionLabel>
-          <Grid container spacing={2}>
-            {recommendations.map((r) => {
-              const isToday = r.urgency === 'Today';
-              return (
-                <Grid key={r.id} size={{ xs: 12, sm: 6 }}>
-                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: '20px !important' }}>
+          <Card>
+            <CardContent sx={{ p: '20px !important' }}>
 
-                      {/* Urgency badge */}
-                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625, px: 1, py: 0.375, borderRadius: '99px', alignSelf: 'flex-start', mb: 1.75,
-                        bgcolor: isToday ? C.errorLight : C.warmLight,
-                      }}>
-                        <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1 }}>
-                          {r.urgency}
-                        </Typography>
-                      </Box>
+              {/* Column headers */}
+              <Box sx={{
+                display: { xs: 'none', md: 'grid' },
+                gridTemplateColumns: '96px 1fr 120px',
+                gap: 1.5, pb: 1.25,
+                borderBottom: `1px solid ${C.grey300}`,
+              }}>
+                {['When', 'Recommendation', 'Impact'].map((col) => (
+                  <Typography key={col} sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
+                    {col}
+                  </Typography>
+                ))}
+              </Box>
 
-                      {/* Title */}
-                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.015em', lineHeight: 1.35, mb: 0.875, flex: 1 }}>
+              {/* Rows */}
+              {recommendations.map((r, i) => {
+                const isToday = r.urgency === 'Today';
+                return (
+                  <Box key={r.id} sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '96px 1fr 120px' },
+                    gap: { xs: 0.5, md: 1.5 },
+                    py: 1.75,
+                    borderBottom: i < recommendations.length - 1 ? `1px solid ${C.grey100}` : 'none',
+                    alignItems: 'flex-start',
+                  }}>
+
+                    {/* When */}
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625, px: 1, py: 0.375, borderRadius: '99px', alignSelf: { xs: 'flex-start', md: 'flex-start' },
+                      bgcolor: isToday ? C.errorLight : C.warmLight,
+                    }}>
+                      <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1, whiteSpace: 'nowrap' }}>
+                        {r.urgency}
+                      </Typography>
+                    </Box>
+
+                    {/* Recommendation */}
+                    <Box>
+                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.375 }}>
                         {r.title}
                       </Typography>
-
-                      {/* Detail */}
-                      <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, lineHeight: 1.6, letterSpacing: '-0.005em', mb: 1.5 }}>
+                      <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.55, letterSpacing: '-0.005em' }}>
                         {r.detail}
                       </Typography>
+                    </Box>
 
-                      {/* Impact */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.5, borderTop: `1px solid ${C.grey100}` }}>
-                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                          {r.impact}
-                        </Typography>
-                      </Box>
+                    {/* Impact */}
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+                      {r.impact}
+                    </Typography>
 
-                    </CardContent>
-                  </Card>
-                </Grid>
-              );
-            })}
-          </Grid>
+                  </Box>
+                );
+              })}
+
+            </CardContent>
+          </Card>
         </Box>
 
         {/* ── Venue Performance ───────────────────────────────────────── */}
