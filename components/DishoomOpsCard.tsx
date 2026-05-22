@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import snapshot from '@/data/opsSnapshot';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const C = {
   textPrimary:   '#0A0A0A',
   textSecondary: '#6B6970',
@@ -67,7 +69,7 @@ export default function DishoomOpsCard() {
               rgba(5,20,15,0.45) 75%,
               rgba(5,20,15,0.20) 100%
             ),
-            url('/images/dishoom-food.jpeg')
+            url('${BASE}/images/dishoom-food.jpeg')
           `,
           backgroundSize: 'cover',
           backgroundPosition: 'center 35%',

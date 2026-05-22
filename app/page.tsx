@@ -32,6 +32,8 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 // ─── Design system tokens ─────────────────────────────────────────────────────
 const C = {
   // Text
@@ -215,13 +217,13 @@ const drivers = [
 
 const menuData = {
   trending:  [
-    { name: 'House Black Daal', delta: '+23%', img: '/images/food/daal.jpg',    orders: 1842 },
-    { name: 'Lamb Chops',       delta: '+15%', img: '/images/food/lamb.jpg',    orders: 1340 },
-    { name: 'Roomali Roti',     delta: '+8%',  img: '/images/food/roti.jpg',    orders: 983  },
+    { name: 'House Black Daal', delta: '+23%', img: `${BASE}/images/food/daal.jpg`,    orders: 1842 },
+    { name: 'Lamb Chops',       delta: '+15%', img: `${BASE}/images/food/lamb.jpg`,    orders: 1340 },
+    { name: 'Roomali Roti',     delta: '+8%',  img: `${BASE}/images/food/roti.jpg`,    orders: 983  },
   ],
   declining: [
-    { name: 'Chicken Ruby', delta: '−11%', img: '/images/food/chicken.jpg', orders: 612 },
-    { name: 'House Salad',  delta: '−7%',  img: '/images/food/salad.jpg',   orders: 448 },
+    { name: 'Chicken Ruby', delta: '−11%', img: `${BASE}/images/food/chicken.jpg`, orders: 612 },
+    { name: 'House Salad',  delta: '−7%',  img: `${BASE}/images/food/salad.jpg`,   orders: 448 },
   ],
   opportunities: [
     {
