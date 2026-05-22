@@ -165,12 +165,59 @@ const signals = [
     impactNote: 'Revenue risk',
     ctaLabel: 'Dig into this',
   },
+  {
+    id: 4, severity: 'medium' as const,
+    venue: 'Covent Garden', title: 'Labour overspend risk',
+    sub: 'Projected £1.2k over target today',
+    detail: 'Labour cost is tracking at 21% today against an 18% target. Likely driven by the unplanned cover shifts added yesterday evening.',
+    time: 'Today',          tag: 'Finance',
+    tier: 'risk'  as Tier,
+    impactNote: '£1.2k cost risk',
+    ctaLabel: 'Review shifts',
+  },
+  {
+    id: 5, severity: 'low' as const,
+    venue: 'Network',       title: 'Payment adoption behind',
+    sub: '6% below network average across 4 houses',
+    detail: 'Birmingham, Battersea, Bristol, and Kensington are all below the 90% cashless target. A brief nudge to front-of-house teams could close this quickly.',
+    time: 'This week',      tag: 'Operations',
+    tier: 'watch' as Tier,
+    impactNote: '£1.8k opp.',
+    ctaLabel: 'Send reminder',
+  },
 ];
 
 const changes = [
   { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'The new brunch is landing well. Covers up 18% on the first weekend, guests are leaning in.',                  time: 'Yesterday' },
   { id: 2, type: 'up',   venue: 'Network',       text: 'Cashless nudge is working. Payment adoption up 6% across the estate since the rollout.',                      time: 'Yesterday' },
   { id: 3, type: 'down', venue: 'Covent Garden', text: <>Guest satisfaction has slipped to 3.9<StarRoundedIcon sx={{ fontSize: '0.6rem', color: '#E8A020', verticalAlign: 'middle', position: 'relative', top: '-1px', mx: '1px' }} />, the lowest in the house. Weekend staffing is the likely cause.</>, time: '3 days ago' },
+];
+
+const recommendations = [
+  {
+    id: 1, urgency: 'Today' as const,
+    title: 'Fill the Edinburgh weekend rota',
+    detail: 'Saturday dinner and Sunday brunch both have open shifts. Each unfilled slot cuts around 120 covers from a fully-booked service.',
+    impact: '~380 covers protected',
+  },
+  {
+    id: 2, urgency: 'Today' as const,
+    title: 'Restart the Covent Garden till',
+    detail: "A reboot and manual resync should resolve the 47-minute outage in under 10 minutes. End-of-day reporting is at risk until it's fixed.",
+    impact: 'Reporting accuracy restored',
+  },
+  {
+    id: 3, urgency: 'This week' as const,
+    title: 'Roll out the pre-service ritual to 4 more houses',
+    detail: "Shoreditch's daily gather is the clearest differentiator among top scorers. Edinburgh, Manchester, Kensington, and Battersea are the best candidates to adopt it next.",
+    impact: 'Est. +0.3★ per venue',
+  },
+  {
+    id: 4, urgency: 'This week' as const,
+    title: 'Run a drink attach nudge at underperforming venues',
+    detail: "Six houses are below 65% attach rate — the biggest revenue lever on the estate. A targeted prompt at the point of ordering could move the needle quickly.",
+    impact: 'Est. +£12K / month',
+  },
 ];
 
 const venues = [
@@ -411,10 +458,10 @@ export default function HomePage() {
           <Grid container spacing={2}>
 
             {/* Priority Signals */}
-            <Grid size={{ xs: 12, md: 7 }}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent sx={{ p: '20px !important' }}>
-                  <SectionLabel aside="3 items">Signals to act on</SectionLabel>
+                  <SectionLabel aside="5 items">Signals to act on</SectionLabel>
 
                   {/* Column headers */}
                   <Box sx={{
@@ -445,10 +492,12 @@ export default function HomePage() {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {s.severity === 'high'
                           ? <WarningAmberRoundedIcon sx={{ fontSize: '0.9375rem', color: C.errorMain, flexShrink: 0 }} />
+                          : s.severity === 'medium'
+                          ? <WarningAmberRoundedIcon sx={{ fontSize: '0.9375rem', color: C.warmMain, flexShrink: 0 }} />
                           : <InfoOutlinedIcon sx={{ fontSize: '0.9375rem', color: C.textMuted, flexShrink: 0 }} />
                         }
-                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1, whiteSpace: 'nowrap', color: s.severity === 'high' ? C.errorMain : C.textSecondary }}>
-                          {s.severity === 'high' ? 'High' : 'Medium'}
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, letterSpacing: '-0.01em', lineHeight: 1, whiteSpace: 'nowrap', color: s.severity === 'high' ? C.errorMain : s.severity === 'medium' ? C.warmDark : C.textMuted }}>
+                          {s.severity === 'high' ? 'High' : s.severity === 'medium' ? 'Medium' : 'Low'}
                         </Typography>
                       </Box>
 
@@ -478,7 +527,7 @@ export default function HomePage() {
             </Grid>
 
             {/* Recent Changes */}
-            <Grid size={{ xs: 12, md: 5 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
                   <SectionLabel>Across venues</SectionLabel>
@@ -514,6 +563,53 @@ export default function HomePage() {
           </Grid>
         </Box>
 
+
+        {/* ── Recommendations ─────────────────────────────────────────── */}
+        <Box className="fade-in delay-4" sx={{ mb: 4 }}>
+          <SectionLabel large>Recommendations</SectionLabel>
+          <Grid container spacing={2}>
+            {recommendations.map((r) => {
+              const isToday = r.urgency === 'Today';
+              return (
+                <Grid key={r.id} size={{ xs: 12, sm: 6 }}>
+                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: '20px !important' }}>
+
+                      {/* Urgency badge */}
+                      <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.625, px: 1, py: 0.375, borderRadius: '99px', alignSelf: 'flex-start', mb: 1.75,
+                        bgcolor: isToday ? C.errorLight : C.warmLight,
+                      }}>
+                        <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
+                        <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1 }}>
+                          {r.urgency}
+                        </Typography>
+                      </Box>
+
+                      {/* Title */}
+                      <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.015em', lineHeight: 1.35, mb: 0.875, flex: 1 }}>
+                        {r.title}
+                      </Typography>
+
+                      {/* Detail */}
+                      <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, lineHeight: 1.6, letterSpacing: '-0.005em', mb: 1.5 }}>
+                        {r.detail}
+                      </Typography>
+
+                      {/* Impact */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.5, borderTop: `1px solid ${C.grey100}` }}>
+                        <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
+                        <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
+                          {r.impact}
+                        </Typography>
+                      </Box>
+
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
 
         {/* ── Venue Performance ───────────────────────────────────────── */}
         <Box id="section-venues" className="fade-in delay-5" sx={{ mb: 4 }}>

@@ -21,12 +21,12 @@ const C = {
 };
 
 const VENUE_HEALTH = [
-  { label: 'Healthy',  count: 7, stroke: '#8DD8A5', color: '#2E5158' },
-  { label: 'At risk',  count: 3, stroke: '#F0B680', color: '#72430B' },
-  { label: 'Critical', count: 1, stroke: '#E77171', color: '#6F0C23' },
+  { label: 'Healthy',  count: 7, color: '#2E5158' },
+  { label: 'At risk',  count: 3, color: '#A0540C' },
+  { label: 'Critical', count: 1, color: '#C94040' },
 ];
 
-const R     = 36;
+const R     = 40;
 const CIRC  = 2 * Math.PI * R;
 const TOTAL = VENUE_HEALTH.reduce((s, e) => s + e.count, 0);
 
@@ -151,15 +151,15 @@ export default function DishoomOpsCard() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {/* Donut with center count */}
-              <Box sx={{ position: 'relative', width: 112, height: 112, flexShrink: 0 }}>
-                <svg width="112" height="112" viewBox="0 0 100 100">
+              <Box sx={{ position: 'relative', width: 140, height: 140, flexShrink: 0 }}>
+                <svg width="140" height="140" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r={R} fill="none" stroke={C.grey300} strokeWidth="9" />
-                  {SEGMENTS.map(({ label, len, angle, stroke }) => (
+                  {SEGMENTS.map(({ label, len, angle, color }) => (
                     <circle
                       key={label}
                       cx="50" cy="50" r={R}
                       fill="none"
-                      stroke={stroke}
+                      stroke={color}
                       strokeWidth="9"
                       strokeLinecap="butt"
                       strokeDasharray={`${len} ${CIRC}`}
@@ -178,11 +178,11 @@ export default function DishoomOpsCard() {
               </Box>
 
               {/* Status rows */}
-              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                 {VENUE_HEALTH.map(({ label, count, color }) => (
                   <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
-                    <Typography sx={{ fontSize: '1.0625rem', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, minWidth: 16, flexShrink: 0 }}>
+                    <Box sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, minWidth: 18, flexShrink: 0 }}>
                       {count}
                     </Typography>
                     <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1 }}>
