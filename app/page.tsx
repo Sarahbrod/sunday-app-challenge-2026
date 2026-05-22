@@ -139,51 +139,41 @@ const signals = [
     id: 1, severity: 'high' as const,
     venue: 'Edinburgh',     title: 'Weekend cover needed',
     sub: '3 shifts unfilled — Sat & Sun most exposed',
-    detail: 'Three shifts still unfilled this weekend. Saturday dinner and Sunday brunch are most exposed.',
-    time: '2 hours ago',    tag: 'Staffing',
     tier: 'good'  as Tier,
     impactNote: 'Service risk',
-    ctaLabel: 'Sort the rota',
+    recommendation: 'Fill the rota — 3 open shifts before Saturday service',
   },
   {
     id: 2, severity: 'high' as const,
     venue: 'Covent Garden', title: 'Till sync has stalled',
     sub: 'Last successful sync 47 mins ago',
-    detail: 'Last successful sync was 47 minutes ago. Sales figures may be incomplete until this is resolved.',
-    time: '47 mins ago',    tag: 'Operations',
     tier: 'risk'  as Tier,
     impactNote: 'Data integrity',
-    ctaLabel: 'Look into it',
+    recommendation: 'Reboot the till and run a manual resync',
   },
   {
     id: 3, severity: 'medium' as const,
     venue: 'Carnaby',       title: 'Guests not returning',
     sub: 'Repeat visits down 12% month-on-month',
-    detail: "Repeat visits down 12% month-on-month. Satisfaction is holding steady, but something in the experience isn't bringing guests back for a second visit.",
-    time: 'This month',     tag: 'Guest',
     tier: 'watch' as Tier,
     impactNote: 'Revenue risk',
-    ctaLabel: 'Dig into this',
+    recommendation: 'Trial a set brunch format to drive return visits',
   },
   {
     id: 4, severity: 'medium' as const,
     venue: 'Covent Garden', title: 'Labour overspend risk',
     sub: 'Projected £1.2k over target today',
-    detail: 'Labour cost is tracking at 21% today against an 18% target. Likely driven by the unplanned cover shifts added yesterday evening.',
-    time: 'Today',          tag: 'Finance',
     tier: 'risk'  as Tier,
     impactNote: '£1.2k cost risk',
-    ctaLabel: 'Review shifts',
+    recommendation: 'Review and defer unplanned cover shifts today',
   },
   {
     id: 5, severity: 'low' as const,
     venue: 'Network',       title: 'Payment adoption behind',
     sub: '6% below network average across 4 houses',
-    detail: 'Birmingham, Battersea, Bristol, and Kensington are all below the 90% cashless target. A brief nudge to front-of-house teams could close this quickly.',
-    time: 'This week',      tag: 'Operations',
     tier: 'watch' as Tier,
     impactNote: '£1.8k opp.',
-    ctaLabel: 'Send reminder',
+    recommendation: 'Brief front-of-house at the 4 lagging venues',
   },
 ];
 
@@ -191,37 +181,6 @@ const changes = [
   { id: 1, type: 'up',   venue: 'Shoreditch',    text: 'The new brunch is landing well. Covers up 18% on the first weekend, guests are leaning in.',                  time: 'Yesterday' },
   { id: 2, type: 'up',   venue: 'Network',       text: 'Cashless nudge is working. Payment adoption up 6% across the estate since the rollout.',                      time: 'Yesterday' },
   { id: 3, type: 'down', venue: 'Covent Garden', text: <>Guest satisfaction has slipped to 3.9<StarRoundedIcon sx={{ fontSize: '0.6rem', color: '#E8A020', verticalAlign: 'middle', position: 'relative', top: '-1px', mx: '1px' }} />, the lowest in the house. Weekend staffing is the likely cause.</>, time: '3 days ago' },
-];
-
-const recommendations = [
-  {
-    id: 1, urgency: 'Today' as const,
-    title: 'Fill the Edinburgh weekend rota',
-    sub: '3 open shifts before Saturday and Sunday service',
-    venue: 'Edinburgh',
-    impact: '~380 covers protected',
-  },
-  {
-    id: 2, urgency: 'Today' as const,
-    title: 'Restart the Covent Garden till',
-    sub: 'Reboot and resync takes under 10 minutes',
-    venue: 'Covent Garden',
-    impact: 'Reporting accuracy',
-  },
-  {
-    id: 3, urgency: 'This week' as const,
-    title: 'Roll out the pre-service ritual',
-    sub: 'Edinburgh, Manchester, Kensington, and Battersea are ready',
-    venue: 'Estate',
-    impact: 'Est. +0.3★ per venue',
-  },
-  {
-    id: 4, urgency: 'This week' as const,
-    title: 'Push drink attach rate at 6 houses',
-    sub: 'All below 65% — biggest revenue lever on the estate',
-    venue: 'Estate',
-    impact: 'Est. +£12K / month',
-  },
 ];
 
 const venues = [
@@ -461,42 +420,37 @@ export default function HomePage() {
 
           <Grid container spacing={2}>
 
-            {/* Combined signals + recommendations */}
+            {/* Signals + inline recommendations */}
             <Grid size={{ xs: 12, md: 8 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent sx={{ p: '20px !important' }}>
+                  <SectionLabel aside={`${signals.length} items`}>Signals to act on</SectionLabel>
 
                   {/* Column headers */}
                   <Box sx={{
                     display: { xs: 'none', md: 'grid' },
-                    gridTemplateColumns: '88px 1fr 108px 88px',
+                    gridTemplateColumns: '76px 1fr 96px 76px 1fr',
                     gap: 1.5, pb: 1.25,
                     borderBottom: `1px solid ${C.grey300}`,
                   }}>
-                    {['Priority', 'Item', 'Venue', 'Impact'].map((col) => (
+                    {['Priority', 'Issue', 'Venue', 'Impact', 'Recommendation'].map((col) => (
                       <Typography key={col} sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
                         {col}
                       </Typography>
                     ))}
                   </Box>
 
-                  {/* ── Signals group label ── */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.25, pb: 0.25 }}>
-                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
-                      Signals to act on
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.5625rem', color: C.textMuted }}>· {signals.length}</Typography>
-                  </Box>
-
-                  {signals.map((s) => (
+                  {signals.map((s, i) => (
                     <Box key={s.id} sx={{
                       display: 'grid',
-                      gridTemplateColumns: { xs: 'auto 1fr', md: '88px 1fr 108px 88px' },
+                      gridTemplateColumns: { xs: 'auto 1fr', md: '76px 1fr 96px 76px 1fr' },
                       gap: { xs: 1.25, md: 1.5 },
                       py: 1.5,
-                      borderBottom: `1px solid ${C.grey100}`,
+                      borderBottom: i < signals.length - 1 ? `1px solid ${C.grey100}` : 'none',
                       alignItems: 'flex-start',
                     }}>
+
+                      {/* Priority */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         {s.severity === 'high'
                           ? <WarningAmberRoundedIcon sx={{ fontSize: '0.9375rem', color: C.errorMain, flexShrink: 0 }} />
@@ -508,6 +462,8 @@ export default function HomePage() {
                           {s.severity === 'high' ? 'High' : s.severity === 'medium' ? 'Medium' : 'Low'}
                         </Typography>
                       </Box>
+
+                      {/* Issue */}
                       <Box>
                         <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.3 }}>
                           {s.title}
@@ -516,60 +472,24 @@ export default function HomePage() {
                           {s.sub}
                         </Typography>
                       </Box>
+
+                      {/* Venue */}
                       <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                         {s.venue}
                       </Typography>
+
+                      {/* Impact */}
                       <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
                         {s.impactNote}
                       </Typography>
+
+                      {/* Recommendation */}
+                      <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.successDark, letterSpacing: '-0.01em', lineHeight: 1.3, fontStyle: 'italic' }}>
+                        {s.recommendation}
+                      </Typography>
+
                     </Box>
                   ))}
-
-                  {/* ── Recommendations group label ── */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, pt: 1.75, pb: 0.25 }}>
-                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
-                      Recommended actions
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.5625rem', color: C.textMuted }}>· {recommendations.length}</Typography>
-                  </Box>
-
-                  {recommendations.map((r, i) => {
-                    const isToday = r.urgency === 'Today';
-                    return (
-                      <Box key={r.id} sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: 'auto 1fr', md: '88px 1fr 108px 88px' },
-                        gap: { xs: 1.25, md: 1.5 },
-                        py: 1.5,
-                        borderBottom: i < recommendations.length - 1 ? `1px solid ${C.grey100}` : 'none',
-                        alignItems: 'flex-start',
-                      }}>
-                        <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.875, py: 0.4, borderRadius: '99px', alignSelf: 'flex-start',
-                          bgcolor: isToday ? C.errorLight : C.warmLight,
-                        }}>
-                          <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: isToday ? C.errorMain : C.warmMain, flexShrink: 0 }} />
-                          <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: isToday ? C.errorDark : C.warmDark, lineHeight: 1, whiteSpace: 'nowrap' }}>
-                            {r.urgency}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.3 }}>
-                            {r.title}
-                          </Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.45, letterSpacing: '-0.005em' }}>
-                            {r.sub}
-                          </Typography>
-                        </Box>
-                        <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                          {r.venue}
-                        </Typography>
-                        <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
-                          {r.impact}
-                        </Typography>
-                      </Box>
-                    );
-                  })}
-
                 </CardContent>
               </Card>
             </Grid>
@@ -661,54 +581,40 @@ export default function HomePage() {
                   <Box sx={{ position: 'relative', height: 360, borderRadius: '10px', overflow: 'hidden', border: `1px solid rgba(0,0,0,0.06)` }}>
                     {mounted && <VenueMapComponent activeTier={activeTier} activeTiers={mapActiveTiers} />}
 
-                    {/* Floating tier legend */}
+                    {/* Location key */}
                     <Box sx={{
                       position: 'absolute', bottom: 12, left: 12,
-                      display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0, zIndex: 1000,
-                      bgcolor: '#fff', borderRadius: '99px',
+                      zIndex: 1000,
+                      bgcolor: '#fff', borderRadius: '8px',
                       boxShadow: '0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
-                      px: 0.5, py: 0.5,
-                      maxWidth: 'calc(100% - 24px)',
+                      px: 1.5, py: 1.25,
                     }}>
-                      {(Object.entries(TIER_STYLE) as [Tier, typeof TIER_STYLE[Tier]][]).map(([tier, s]) => {
-                        const count = venues.filter(v => v.tier === tier).length;
-                        const isSelected = activeTier === tier;
-                        const isDimmed = activeTier !== null && !isSelected;
-                        return (
-                          <Box key={tier} onClick={() => setActiveTier(isSelected ? null : tier)}
-                            sx={{
-                              display: 'inline-flex', alignItems: 'center', gap: 0.75,
-                              px: 1.25, py: 0.625, borderRadius: '99px',
-                              cursor: 'pointer', userSelect: 'none',
-                              bgcolor: isSelected ? `${s.bg}12` : 'transparent',
-                              opacity: isDimmed ? 0.35 : 1,
-                              transition: 'all 0.15s ease',
-                              '&:hover': { opacity: 1, bgcolor: `${s.bg}0E` },
-                            }}
-                          >
-                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: s.bg, flexShrink: 0 }} />
-                            <Typography sx={{ fontSize: '0.6875rem', fontWeight: isSelected ? 600 : 400, color: isSelected ? C.textPrimary : C.textSecondary, letterSpacing: '-0.005em', lineHeight: 1, whiteSpace: 'nowrap' }}>
-                              {s.label}
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.625rem', fontWeight: 600, color: isSelected ? s.bg : C.textMuted, lineHeight: 1 }}>
-                              {count}
-                            </Typography>
-                          </Box>
-                        );
-                      })}
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: '6px', columnGap: '14px' }}>
+                        {venues.map((v) => {
+                          const ts = TIER_STYLE[v.tier as Tier];
+                          return (
+                            <Box key={v.name} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ts.bg, flexShrink: 0 }} />
+                              <Typography sx={{ fontSize: '0.5625rem', color: C.textSecondary, letterSpacing: '-0.005em', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                                {v.name}
+                              </Typography>
+                            </Box>
+                          );
+                        })}
+                      </Box>
                     </Box>
                   </Box>
 
-                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
-                      Select a tier to refine the map
-                    </Typography>
-                    {activeTier && (
+                  {activeTier && (
+                    <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, letterSpacing: '-0.005em' }}>
+                        Filtered by {TIER_STYLE[activeTier].label}
+                      </Typography>
                       <Typography onClick={() => setActiveTier(null)} sx={{ fontSize: '0.6875rem', color: C.textSecondary, cursor: 'pointer', ml: 0.5, '&:hover': { color: C.textPrimary } }}>
                         · Clear
                       </Typography>
-                    )}
-                  </Box>
+                    </Box>
+                  )}
                 </Grid>
 
                 {/* Right: Top performers leaderboard */}
