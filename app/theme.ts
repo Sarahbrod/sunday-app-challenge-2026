@@ -1,70 +1,68 @@
 import { createTheme } from '@mui/material/styles';
 
-// ─── Sunday Design System ────────────────────────────────────────────────────
-// Main:      #FF17E9 (magenta), #E8308A (print pink), #000000, #FFFFFF
-// Greys:     #B7B5BB, #F5F5F6
-// Nav:       #FDF3FD highlight, grey text
-// Red:       #6F0C23 → #E77171 → #FDDFDF  (error / danger)
-// Green:     #2E5158 → #8DD8A5 → #E1FBED  (success / positive)
-// Blue:      #2D3482 → #7193E9 → #EBEDFB  (info)
-// Warm:      #72430B → #F0B680 → #F9E5CD  (brand warmth / Dishoom)
-// Yellow:    #5A5D38 → #F3DF76 → #F9F8CD  (warning)
+// ─── FOBA Design System — PioneerAi palette ───────────────────────────────────
+// Yellow:    #F5E68A (hero accent)
+// Orange:    #F07830 (warm accent / warning)
+// Coral:     #E84030 (error / danger)
+// Black:     #1A1818 (primary text / bg)
+// Purple:    #8B6CF5 → #D4A0C8 (gradient)
+// Cream:     #F5F2ED (background)
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     background: {
-      default: '#F6F6F9',
+      default: '#F5F2ED',
       paper: '#FFFFFF',
     },
     primary: {
-      main: '#E8308A',
-      dark: '#C01F6E',
-      light: '#FDDFDF',
-      contrastText: '#FFFFFF',
+      main: '#1A1818',
+      dark: '#111010',
+      light: '#3D3A3A',
+      contrastText: '#F5E68A',
     },
     secondary: {
-      main: '#400F66',
-      light: '#D0ABED',
-      dark: '#2A0A44',
+      main: '#8B6CF5',
+      light: '#D4A0C8',
+      dark: '#4828A8',
       contrastText: '#FFFFFF',
     },
     error: {
-      main: '#E77171',
-      dark: '#6F0C23',
-      light: '#FDDFDF',
+      main: '#E84030',
+      dark: '#8C1808',
+      light: '#FCE0DA',
       contrastText: '#FFFFFF',
     },
     warning: {
-      main: '#F3DF76',
-      dark: '#72430B',
-      light: '#F9F8CD',
-      contrastText: '#3D2A00',
+      main: '#F07830',
+      dark: '#7A4808',
+      light: '#FCE8D0',
+      contrastText: '#FFFFFF',
     },
     success: {
-      main: '#8DD8A5',
-      dark: '#2E5158',
-      light: '#E1FBED',
+      main: '#6EC890',
+      dark: '#1A5C3A',
+      light: '#D4F0E4',
       contrastText: '#FFFFFF',
     },
     info: {
-      main: '#7193E9',
-      dark: '#2D3482',
-      light: '#EBEDFB',
+      main: '#8B6CF5',
+      dark: '#4828A8',
+      light: '#E8E0FC',
       contrastText: '#FFFFFF',
     },
     text: {
-      primary: '#0A0A0A',
-      secondary: '#6B6970',
-      disabled: '#B7B5BB',
+      primary: '#1A1818',
+      secondary: '#696764',
+      disabled: '#A8A5A0',
     },
     divider: 'rgba(0,0,0,0.06)',
     grey: {
-      100: '#F5F5F6',
-      300: '#E2E1E5',
-      500: '#B7B5BB',
-      700: '#6B6970',
-      900: '#1A1A1A',
+      100: '#F5F2ED',
+      300: '#E0DDD8',
+      500: '#A8A5A0',
+      700: '#696764',
+      900: '#1A1818',
     },
   },
   typography: {
@@ -108,14 +106,14 @@ const theme = createTheme({
         },
         body: {
           fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-          backgroundColor: '#F6F6F9',
+          backgroundColor: '#F5F2ED',
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.045)',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.06)',
           borderRadius: 12,
           backgroundImage: 'none',
           transition: 'box-shadow 0.18s ease, transform 0.18s ease',

@@ -11,8 +11,6 @@ import Button from '@mui/material/Button';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import snapshot from '@/data/opsSnapshot';
 
-const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-
 const C = {
   textPrimary:   '#0A0A0A',
   textSecondary: '#6B6970',
@@ -20,19 +18,19 @@ const C = {
   grey300:       '#E2E1E5',
 };
 
-const VENUE_HEALTH = [
-  { label: 'Healthy',  count: 7, color: '#2E5158' },
-  { label: 'At risk',  count: 3, color: '#A0540C' },
-  { label: 'Critical', count: 1, color: '#C94040' },
+const CREATOR_HEALTH = [
+  { label: 'Growing',         count: 7, color: '#1A5C3A' },
+  { label: 'Needs attention', count: 3, color: '#F07830' },
+  { label: 'At risk',         count: 1, color: '#E84030' },
 ];
 
 const R     = 40;
 const CIRC  = 2 * Math.PI * R;
-const TOTAL = VENUE_HEALTH.reduce((s, e) => s + e.count, 0);
+const TOTAL = CREATOR_HEALTH.reduce((s, e) => s + e.count, 0);
 
 const SEGMENTS = (() => {
   let cum = 0;
-  return VENUE_HEALTH.map((e) => {
+  return CREATOR_HEALTH.map((e) => {
     const len   = (e.count / TOTAL) * CIRC;
     const angle = -90 + (cum / CIRC) * 360;
     cum += len;
@@ -40,7 +38,7 @@ const SEGMENTS = (() => {
   });
 })();
 
-export default function DishoomOpsCard() {
+export default function FOBAOpsCard() {
   const { status, focus } = snapshot;
 
   return (
@@ -52,7 +50,7 @@ export default function DishoomOpsCard() {
         minHeight: { xs: 'auto', md: 220 },
       }}
     >
-      {/* ── Left: photo + status ─────────────────────────────── */}
+      {/* ── Left: brand gradient + status ───────────────────────── */}
       <Box
         sx={{
           position: 'relative',
@@ -61,17 +59,7 @@ export default function DishoomOpsCard() {
           justifyContent: 'space-between',
           p: 2.5,
           color: '#fff',
-          backgroundImage: `
-            linear-gradient(105deg,
-              rgba(5,20,15,0.97) 0%,
-              rgba(5,20,15,0.82) 45%,
-              rgba(5,20,15,0.45) 75%,
-              rgba(5,20,15,0.20) 100%
-            ),
-            url('${BASE}/images/dishoom-food.jpeg')
-          `,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center 35%',
+          background: 'linear-gradient(140deg, #111010 0%, #1E1840 40%, #4828A8 75%, #8B6CF5 100%)',
           minHeight: { xs: 180, md: 'auto' },
         }}
       >
@@ -86,9 +74,9 @@ export default function DishoomOpsCard() {
               fontWeight: 700,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              bgcolor: 'rgba(110,231,183,0.12)',
-              color: '#6EE7B7',
-              border: '1px solid rgba(110,231,183,0.22)',
+              bgcolor: 'rgba(245,230,138,0.15)',
+              color: '#F5E68A',
+              border: '1px solid rgba(245,230,138,0.30)',
               '& .MuiChip-label': { px: '7px' },
             }}
           />
@@ -113,7 +101,7 @@ export default function DishoomOpsCard() {
         </Box>
 
         <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
-          <TrendingUpRoundedIcon sx={{ fontSize: '0.875rem', color: '#6EE7B7' }} />
+          <TrendingUpRoundedIcon sx={{ fontSize: '0.875rem', color: '#F5E68A' }} />
           <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#fff', letterSpacing: '-0.01em' }}>
             {status.trend.label}
           </Typography>
@@ -123,7 +111,7 @@ export default function DishoomOpsCard() {
         </Box>
       </Box>
 
-      {/* ── Right: venue health + focus ──────────────────────── */}
+      {/* ── Right: creator health + priority ─────────────────────── */}
       <Box
         sx={{
           display: 'grid',
@@ -132,7 +120,7 @@ export default function DishoomOpsCard() {
           p: 0,
         }}
       >
-        {/* ── Venue health ── */}
+        {/* ── Creator health ── */}
         <Box
           onClick={() => document.getElementById('section-venues')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
           sx={{
@@ -143,10 +131,9 @@ export default function DishoomOpsCard() {
             '&:hover': { backgroundColor: 'rgba(0,0,0,0.025)' },
           }}
         >
-          {/* Top: label + donut + rows */}
           <Box>
             <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.75 }}>
-              Venue health
+              Creator health
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -169,7 +156,7 @@ export default function DishoomOpsCard() {
                 </svg>
                 <Box sx={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <Typography sx={{ fontSize: '1.1875rem', fontWeight: 700, color: C.textPrimary, letterSpacing: '-0.045em', lineHeight: 1 }}>
-                    {VENUE_HEALTH[0].count}
+                    {CREATOR_HEALTH[0].count}
                   </Typography>
                   <Typography sx={{ fontSize: '0.5625rem', color: C.textMuted, letterSpacing: '0.01em', lineHeight: 1.4 }}>
                     of {TOTAL}
@@ -179,7 +166,7 @@ export default function DishoomOpsCard() {
 
               {/* Status rows */}
               <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                {VENUE_HEALTH.map(({ label, count, color }) => (
+                {CREATOR_HEALTH.map(({ label, count, color }) => (
                   <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box sx={{ width: 9, height: 9, borderRadius: '50%', bgcolor: color, flexShrink: 0 }} />
                     <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, minWidth: 18, flexShrink: 0 }}>
@@ -202,12 +189,11 @@ export default function DishoomOpsCard() {
           sx={{ display: { xs: 'none', sm: 'block' }, borderColor: C.grey300, my: 2.5 }}
         />
 
-        {/* ── Focus today ── */}
+        {/* ── Priority today ── */}
         <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          {/* Top: venue + issue + impact */}
           <Box>
             <Typography sx={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
-              Focus today
+              Priority today
             </Typography>
             <Typography sx={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '-0.025em', color: C.textPrimary, mb: 0.625, lineHeight: 1.2 }}>
               {focus.venue}
@@ -220,7 +206,6 @@ export default function DishoomOpsCard() {
             </Typography>
           </Box>
 
-          {/* Bottom: CTA */}
           <Button
             variant="outlined"
             size="small"

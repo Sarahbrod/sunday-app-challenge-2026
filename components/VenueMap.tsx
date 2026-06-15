@@ -35,8 +35,8 @@ export default function VenueMap({ activeTier, activeTiers, activeRegion }: Venu
       if (mapRef.current) return;
 
       map = L.map(containerRef.current, {
-        center: [53.5, -1.8],
-        zoom: 6,
+        center: [25, 10],
+        zoom: 2,
         zoomControl: false,
         attributionControl: true,
         scrollWheelZoom: false,
@@ -94,9 +94,9 @@ export default function VenueMap({ activeTier, activeTiers, activeRegion }: Venu
         const marker = L.marker([v.lat, v.lng], { icon })
           .addTo(map!)
           .bindPopup(
-            `<div style="min-width:130px;">
+            `<div style="min-width:140px;">
                <div style="font-weight:600;font-size:13px;color:#0A0A0A;margin-bottom:5px;letter-spacing:-0.01em;">${v.name}</div>
-               <div style="font-size:11px;color:#6B6970;margin-bottom:4px;">Score ${v.score} &nbsp;·&nbsp; ${v.satisfaction}★</div>
+               <div style="font-size:11px;color:#6B6970;margin-bottom:4px;">Score ${v.score} &nbsp;·&nbsp; ${v.satisfaction}% eng.</div>
                <span style="
                  display:inline-block;font-size:10px;font-weight:600;
                  letter-spacing:0.04em;text-transform:uppercase;
@@ -104,7 +104,7 @@ export default function VenueMap({ activeTier, activeTiers, activeRegion }: Venu
                  padding:2px 7px;border-radius:99px;
                ">${s.label}</span>
              </div>`,
-            { closeButton: false, maxWidth: 180 }
+            { closeButton: false, maxWidth: 200 }
           );
 
         markersRef.current.push(marker);
@@ -128,8 +128,6 @@ export default function VenueMap({ activeTier, activeTiers, activeRegion }: Venu
         { padding: [40, 40] }
       );
 
-      // Force tile re-render after layout settles (needed when container
-      // size wasn't stable at init time)
       requestAnimationFrame(() => map?.invalidateSize());
 
       mapRef.current = map;
@@ -140,7 +138,6 @@ export default function VenueMap({ activeTier, activeTiers, activeRegion }: Venu
         mapRef.current.remove();
         mapRef.current = null;
       } else if (map) {
-        // import resolved but mapRef not yet assigned when cleanup ran
         map.remove();
       }
       markersRef.current = [];

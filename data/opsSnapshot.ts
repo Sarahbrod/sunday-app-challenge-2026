@@ -35,47 +35,47 @@ export interface OpsSnapshot {
 }
 
 const snapshot: OpsSnapshot = {
-  brand: 'Dishoom',
+  brand: 'FOBA',
 
   status: {
     onTrack: true,
-    chipLabel: 'All systems on track',
-    headline: 'The house is\nin good shape.',
-    sub: '8 of 11 houses on or above target today.',
+    chipLabel: 'Network growing',
+    headline: 'Your creators are\nin good shape.',
+    sub: '8 of 11 creators on or above their growth target today.',
     trend: {
-      value: '+1 location on target',
-      label: '+1 location on target',
+      value: '+1 creator on target',
+      label: '+1 creator on target',
       context: 'vs yesterday',
     },
   },
 
   focus: {
-    venue: 'Shoreditch',
-    issue: 'Labour cost 4% above target. Rota overlap between 2 and 4pm.',
-    impact: 'Fixing this saves ~£420 this week',
-    ctaLabel: 'Review rota',
+    venue: 'TechTalk Daily',
+    issue: 'Upload cadence has slipped — 12 days since last video, the longest gap in 6 months.',
+    impact: 'Protecting 2.1M subscriber momentum',
+    ctaLabel: 'Review content calendar',
   },
 
   metrics: [
     {
-      id: 'opportunities',
-      value: '3',
-      label: 'Opportunities',
-      sub: 'Pacing above forecast',
+      id: 'experiments',
+      value: '24',
+      label: 'Experiments',
+      sub: 'Running now',
       tier: 'success',
     },
     {
       id: 'needs-review',
-      value: '1',
-      label: 'Needs review',
-      sub: 'Requires your attention',
+      value: '2',
+      label: 'Need review',
+      sub: 'Require your attention',
       tier: 'warning',
     },
     {
       id: 'at-risk',
-      value: '0',
+      value: '1',
       label: 'At risk',
-      sub: 'No critical issues',
+      sub: 'Creator needs support',
       tier: 'neutral',
     },
   ],
