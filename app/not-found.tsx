@@ -96,17 +96,22 @@ export default function NotFound() {
             component={Link}
             href="/"
             variant="contained"
-            startIcon={<LayoutGrid size={16} />}
+            startIcon={<LayoutGrid size={15} />}
             sx={{
               bgcolor:       C.textPrimary,
-              color:         '#E8C565',
-              fontWeight:    600,
+              color:         '#FFFFFF',
+              fontWeight:    500,
               fontSize:      '0.875rem',
-              borderRadius:  '10px',
+              borderRadius:  '99px',
               textTransform: 'none',
-              px: 2.5, py: 1,
-              boxShadow:     'none',
-              '&:hover': { bgcolor: '#2A2828', boxShadow: 'none' },
+              px: 3,
+              py: 1.125,
+              boxShadow:     '0 1px 3px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10)',
+              letterSpacing: '-0.01em',
+              '&:hover': {
+                bgcolor:   '#2A2828',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.22), 0 6px 20px rgba(0,0,0,0.12)',
+              },
             }}
           >
             Go to dashboard
@@ -115,16 +120,25 @@ export default function NotFound() {
           <Button
             onClick={() => window.history.back()}
             variant="outlined"
-            startIcon={<ArrowLeft size={16} />}
+            startIcon={<ArrowLeft size={15} />}
             sx={{
               color:         C.textSecondary,
               borderColor:   C.grey300,
+              bgcolor:       '#FFFFFF',
               fontWeight:    400,
               fontSize:      '0.875rem',
-              borderRadius:  '10px',
+              borderRadius:  '99px',
               textTransform: 'none',
-              px: 2.5, py: 1,
-              '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' },
+              px: 3,
+              py: 1.125,
+              letterSpacing: '-0.01em',
+              boxShadow:     '0 1px 2px rgba(0,0,0,0.06)',
+              '&:hover': {
+                borderColor:     C.textPrimary,
+                color:           C.textPrimary,
+                backgroundColor: '#FAFAFA',
+                boxShadow:       '0 1px 4px rgba(0,0,0,0.10)',
+              },
             }}
           >
             Go back
