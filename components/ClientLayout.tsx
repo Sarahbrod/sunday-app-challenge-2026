@@ -2,6 +2,7 @@
 
 import Box from '@mui/material/Box';
 import Sidebar from './Sidebar';
+import MobileNav from './MobileNav';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,14 +11,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       <Box
         component="main"
         sx={{
-          ml: { xs: 0, md: 'var(--sidebar-w, 220px)' },
+          ml:         { xs: 0, md: 'var(--sidebar-w, 220px)' },
           transition: 'margin-left 0.22s ease',
-          flex: 1,
-          minWidth: 0,
+          flex:       1,
+          minWidth:   0,
+          // Push content below the fixed mobile top bar.
+          pt:         { xs: '52px', md: 0 },
         }}
       >
         {children}
       </Box>
+      <MobileNav />
     </Box>
   );
 }

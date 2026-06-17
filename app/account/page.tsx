@@ -12,44 +12,28 @@ import Chip from '@mui/material/Chip';
 import Switch from '@mui/material/Switch';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import { TIER_STYLE } from '@/components/venueData';
-import type { Tier } from '@/components/venueData';
+import { Check, Plus } from 'lucide-react';
+
 
 const C = {
-  textPrimary:   '#1A1818',
+  textPrimary:   '#1C1C1C',
   textSecondary: '#696764',
-  textMuted:     '#A8A5A0',
+  textMuted:     '#A8A5A2',
   successDark:   '#1A5C3A',
   successLight:  '#D4F0E4',
-  errorMain:     '#E84030',
-  yellowMain:    '#F5E68A',
-  yellowLight:   '#FEFCE8',
-  grey100:       '#F5F2ED',
-  grey300:       '#E0DDD8',
-  purpleMain:    '#8B6CF5',
-  purpleLight:   '#E8E0FC',
+  errorMain:     '#F21A27',
+  yellowMain:    '#E8C565',
+  yellowLight:   '#FBF6DC',
+  grey100:       '#F3EDE6',
+  grey300:       '#DDD7D0',
+  purpleMain:    '#7B9FD4',
+  purpleLight:   '#E0EAF8',
 };
 
 const TEAM_MEMBERS = [
   { name: 'Alex Chen', role: 'Growth Director', email: 'alex@shamelessmedia.com',   avatar: 'A', owner: true  },
   { name: 'James Liu',      role: 'Analyst',         email: 'james@shamelessmedia.com',   avatar: 'J', owner: false },
   { name: 'Priya Mehta',    role: 'Creator Manager', email: 'priya@shamelessmedia.com',   avatar: 'P', owner: false },
-];
-
-const CREATORS_ROSTER = [
-  { name: 'TechTalk Daily',   platform: 'YouTube',    tier: 'top'   as Tier, subs: '2.1M' },
-  { name: 'Pod & Chill',      platform: 'Podcast',    tier: 'top'   as Tier, subs: '340K' },
-  { name: 'Creative Brief',   platform: 'Newsletter', tier: 'good'  as Tier, subs: '89K'  },
-  { name: 'Everyday Finance', platform: 'YouTube',    tier: 'good'  as Tier, subs: '890K' },
-  { name: 'Morning Mindset',  platform: 'Podcast',    tier: 'good'  as Tier, subs: '210K' },
-  { name: 'Sarah Codes',      platform: 'YouTube',    tier: 'good'  as Tier, subs: '560K' },
-  { name: 'Pixel Perfect',    platform: 'YouTube',    tier: 'good'  as Tier, subs: '1.1M' },
-  { name: 'The Hustle Recap', platform: 'Newsletter', tier: 'good'  as Tier, subs: '45K'  },
-  { name: 'GameStream Live',  platform: 'YouTube',    tier: 'watch' as Tier, subs: '920K' },
-  { name: 'Vlog Universe',    platform: 'YouTube',    tier: 'watch' as Tier, subs: '340K' },
-  { name: 'ByteSize News',    platform: 'YouTube',    tier: 'risk'  as Tier, subs: '180K' },
 ];
 
 const INTEGRATIONS = [
@@ -60,11 +44,7 @@ const INTEGRATIONS = [
   { name: 'Google Analytics',       desc: 'Website traffic from video descriptions', status: 'soon',      icon: '📈' },
 ];
 
-const PLATFORM_COLORS: Record<string, string> = {
-  YouTube:    '#E84030',
-  Podcast:    '#F07830',
-  Newsletter: '#1A1818',
-};
+const USER_AVATAR = 'https://api.dicebear.com/9.x/lorelei/svg?seed=AlexChen&backgroundColor=d4f0e4';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -115,7 +95,7 @@ export default function Account() {
               <CardContent sx={{ p: '24px !important' }}>
                 <SectionLabel>Profile</SectionLabel>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, mb: 3 }}>
-                  <Avatar sx={{ width: 56, height: 56, backgroundColor: C.yellowMain, color: C.textPrimary, fontSize: '1.25rem', fontWeight: 700, flexShrink: 0 }}>
+                  <Avatar src={USER_AVATAR} sx={{ width: 56, height: 56, backgroundColor: C.yellowMain, flexShrink: 0 }}>
                     {name.charAt(0)}
                   </Avatar>
                   <Box>
@@ -141,7 +121,7 @@ export default function Account() {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Button variant="contained" onClick={handleSave}
-                    startIcon={saved ? <CheckRoundedIcon sx={{ fontSize: '0.875rem !important' }} /> : undefined}
+                    startIcon={saved ? <Check size={14} strokeWidth={2.5} /> : undefined}
                     sx={{ bgcolor: saved ? C.successDark : C.textPrimary, color: saved ? '#fff' : C.yellowMain, '&:hover': { bgcolor: saved ? C.successDark : '#2A2828' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '8px', textTransform: 'none', boxShadow: 'none', px: 2, transition: 'all 0.2s' }}>
                     {saved ? 'Saved' : 'Save changes'}
                   </Button>
@@ -158,7 +138,7 @@ export default function Account() {
               <CardContent sx={{ p: '24px !important' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <SectionLabel>Team</SectionLabel>
-                  <Button startIcon={<AddRoundedIcon />} size="small"
+                  <Button startIcon={<Plus size={16} />} size="small"
                     sx={{ fontSize: '0.75rem', color: C.textSecondary, textTransform: 'none', fontWeight: 400, '&:hover': { color: C.textPrimary } }}>
                     Invite
                   </Button>
@@ -166,11 +146,11 @@ export default function Account() {
                 {TEAM_MEMBERS.map((m, i) => (
                   <Box key={m.email}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.5 }}>
-                      <Avatar sx={{ width: 34, height: 34, backgroundColor: C.yellowMain, color: C.textPrimary, fontSize: '0.8125rem', fontWeight: 700, flexShrink: 0 }}>{m.avatar}</Avatar>
+                      <Avatar src={m.owner ? USER_AVATAR : undefined} sx={{ width: 34, height: 34, backgroundColor: C.yellowMain, color: C.textPrimary, fontSize: '0.8125rem', fontWeight: 700, flexShrink: 0 }}>{m.avatar}</Avatar>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.125 }}>
                           <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em' }}>{m.name}</Typography>
-                          {m.owner && <Chip label="Owner" size="small" sx={{ height: 16, bgcolor: C.yellowLight, color: '#7A4808', fontWeight: 700, fontSize: '0.5rem', '& .MuiChip-label': { px: '6px' } }} />}
+                          {m.owner && <Chip label="Owner" size="small" sx={{ height: 16, bgcolor: C.yellowLight, color: '#B89530', fontWeight: 700, fontSize: '0.5rem', '& .MuiChip-label': { px: '6px' } }} />}
                         </Box>
                         <Typography sx={{ fontSize: '0.75rem', color: C.textMuted }}>{m.email} · {m.role}</Typography>
                       </Box>
@@ -187,38 +167,6 @@ export default function Account() {
               </CardContent>
             </Card>
 
-            {/* Creator roster */}
-            <Card>
-              <CardContent sx={{ p: '24px !important' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <SectionLabel>Creator roster</SectionLabel>
-                  <Button startIcon={<AddRoundedIcon />} size="small"
-                    sx={{ fontSize: '0.75rem', color: C.textSecondary, textTransform: 'none', fontWeight: 400, '&:hover': { color: C.textPrimary } }}>
-                    Add creator
-                  </Button>
-                </Box>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
-                  {CREATORS_ROSTER.map((c) => {
-                    const ts = TIER_STYLE[c.tier];
-                    return (
-                      <Box key={c.name} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderRadius: '8px', border: `1px solid ${C.grey300}`, '&:hover': { borderColor: C.textPrimary, '& .remove-btn': { opacity: 1 } } }}>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: ts.bg, flexShrink: 0 }} />
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                            <Box sx={{ width: 6, height: 6, borderRadius: '2px', bgcolor: PLATFORM_COLORS[c.platform] ?? C.textMuted }} />
-                            <Typography sx={{ fontSize: '0.625rem', color: C.textMuted }}>{c.platform} · {c.subs}</Typography>
-                          </Box>
-                        </Box>
-                        <Typography className="remove-btn" sx={{ fontSize: '0.625rem', color: C.textMuted, cursor: 'pointer', opacity: 0, transition: 'opacity 0.15s', '&:hover': { color: C.errorMain } }}>
-                          Remove
-                        </Typography>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </CardContent>
-            </Card>
           </Box>
         </Grid>
 
@@ -249,7 +197,7 @@ export default function Account() {
                     <Typography sx={{ fontSize: '0.625rem', color: C.textMuted, mt: 0.25 }}>Win rate</Typography>
                   </Box>
                   <Box sx={{ flex: 1, p: 1.5, borderRadius: '8px', border: `1px solid ${C.grey300}`, textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#F5E68A', letterSpacing: '-0.04em', lineHeight: 1 }}>74</Typography>
+                    <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#E8C565', letterSpacing: '-0.04em', lineHeight: 1 }}>74</Typography>
                     <Typography sx={{ fontSize: '0.625rem', color: C.textMuted, mt: 0.25 }}>Growth score</Typography>
                   </Box>
                 </Box>
@@ -329,7 +277,7 @@ export default function Account() {
                     <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>Permanently delete Shameless Media and all data. This cannot be undone.</Typography>
                   </Box>
                   <Button size="small" variant="outlined"
-                    sx={{ fontSize: '0.75rem', color: C.errorMain, borderColor: `${C.errorMain}50`, borderRadius: '8px', textTransform: 'none', fontWeight: 500, flexShrink: 0, '&:hover': { borderColor: C.errorMain, backgroundColor: '#FCE0DA' } }}>
+                    sx={{ fontSize: '0.75rem', color: C.errorMain, borderColor: `${C.errorMain}50`, borderRadius: '8px', textTransform: 'none', fontWeight: 500, flexShrink: 0, '&:hover': { borderColor: C.errorMain, backgroundColor: '#FCE0E0' } }}>
                     Delete
                   </Button>
                 </Box>

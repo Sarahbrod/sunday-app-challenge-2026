@@ -10,24 +10,22 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 import LinearProgress from '@mui/material/LinearProgress';
 import Link from 'next/link';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
-import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, Plus } from 'lucide-react';
+
 import { ACTIVE_EXPERIMENTS, RECOMMENDED_EXPERIMENTS, GROWTH_SCORE } from '@/data/experiments';
 import ExperimentBuilder from '@/components/ExperimentBuilder';
 
 const C = {
-  textPrimary:   '#1A1818',
+  textPrimary:   '#1C1C1C',
   textSecondary: '#696764',
-  textMuted:     '#A8A5A0',
+  textMuted:     '#A8A5A2',
   successDark:   '#1A5C3A',
   successMain:   '#6EC890',
-  errorMain:     '#E84030',
-  warmMain:      '#F07830',
-  yellowMain:    '#F5E68A',
-  grey100:       '#F5F2ED',
-  grey300:       '#E0DDD8',
+  errorMain:     '#F21A27',
+  warmMain:      '#E8C565',
+  yellowMain:    '#E8C565',
+  grey100:       '#F3EDE6',
+  grey300:       '#DDD7D0',
 };
 
 function buildSparkPath(pts: number[], w = 100, h = 28): string {
@@ -62,22 +60,32 @@ export default function Dashboard() {
     <Box sx={{ px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8 }}>
 
       {/* ── Greeting ── */}
-      <Box className="fade-in delay-1" sx={{ pt: 5.5, pb: 4 }}>
+      <Box className="fade-in delay-1" sx={{ pt: { xs: 2.5, md: 5.5 }, pb: { xs: 3, md: 4 } }}>
         <Typography variant="h3" sx={{ color: C.textPrimary, fontWeight: 500 }}>
           Good morning, Alex.
         </Typography>
       </Box>
 
       {/* ── Key metrics ── */}
-      <Box className="fade-in delay-2" sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
-        {metrics.map((m) => {
+      <Box className="fade-in delay-2" sx={{
+        mb: 4,
+        display: 'grid',
+        gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(5, 1fr)' },
+        gap: 2,
+      }}>
+        {metrics.map((m, idx) => {
           const sparkPath = m.spark ? buildSparkPath(m.spark) : null;
+          // Last card spans both columns on mobile when total is odd
+          const isLastOdd = idx === metrics.length - 1 && metrics.length % 2 !== 0;
           return (
-            <Card key={m.label} sx={{ flex: '1 1 0', minWidth: { xs: 'calc(50% - 8px)', md: 0 }, overflow: 'hidden' }}>
+            <Card key={m.label} sx={{
+              overflow: 'hidden',
+              gridColumn: { xs: isLastOdd ? 'span 2' : 'auto', md: 'auto' },
+            }}>
               <Box sx={{ px: 2.5, pt: 2.5, pb: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, letterSpacing: '-0.005em', mb: 1.25, lineHeight: 1 }}>{m.label}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
-                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: m.isScore ? C.yellowMain : C.textPrimary, letterSpacing: '-0.045em', lineHeight: 1 }}>{m.value}</Typography>
+                  <Typography sx={{ fontSize: '1.75rem', fontWeight: 700, color: m.isScore ? '#E8C565' : C.textPrimary, letterSpacing: '-0.045em', lineHeight: 1 }}>{m.value}</Typography>
                   {m.isScore && <Typography sx={{ fontSize: '0.875rem', color: C.textSecondary }}>/100</Typography>}
                 </Box>
                 {sparkPath && (
@@ -108,7 +116,7 @@ export default function Dashboard() {
                 <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em' }}>
                   Current experiments
                 </Typography>
-                <Button component={Link} href="/experiments" size="small" endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: '0.75rem !important' }} />}
+                <Button component={Link} href="/experiments" size="small" endIcon={<ArrowRight size={13} />}
                   sx={{ fontSize: '0.75rem', color: C.textSecondary, textTransform: 'none', fontWeight: 400, letterSpacing: '-0.005em', minWidth: 0, px: 1, '&:hover': { color: C.textPrimary, backgroundColor: C.grey100 } }}>
                   View all
                 </Button>
@@ -130,9 +138,9 @@ export default function Dashboard() {
                   <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontSize: '0.8125rem', color: C.textSecondary }}>{exp.creator}</Typography>
                   <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontSize: '0.75rem', color: C.textSecondary }}>{exp.successMetric}</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {exp.signal === 'up'      && <TrendingUpRoundedIcon   sx={{ fontSize: '1rem', color: C.successDark }} />}
-                    {exp.signal === 'down'    && <TrendingDownRoundedIcon sx={{ fontSize: '1rem', color: C.errorMain   }} />}
-                    {exp.signal === 'neutral' && <TrendingFlatRoundedIcon sx={{ fontSize: '1rem', color: C.textMuted   }} />}
+                    {exp.signal === 'up'      && <TrendingUp size={16} color={C.successDark} />}
+                    {exp.signal === 'down'    && <TrendingDown size={16} color={C.errorMain} />}
+                    {exp.signal === 'neutral' && <Minus size={16} color={C.textMuted} />}
                     <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: exp.signal === 'up' ? C.successDark : exp.signal === 'down' ? C.errorMain : C.textMuted }}>{exp.currentLift}</Typography>
                   </Box>
                   <Typography sx={{ display: { xs: 'none', sm: 'block' }, fontSize: '0.75rem', color: C.textMuted }}>{exp.daysRunning}d</Typography>
@@ -156,7 +164,7 @@ export default function Dashboard() {
                   <Box sx={{ position: 'relative', width: 90, height: 90, flexShrink: 0 }}>
                     <svg width="90" height="90" viewBox="0 0 100 100">
                       <circle cx="50" cy="50" r={R} fill="none" stroke={C.grey300} strokeWidth="8" />
-                      <circle cx="50" cy="50" r={R} fill="none" stroke={C.yellowMain} strokeWidth="8"
+                      <circle cx="50" cy="50" r={R} fill="none" stroke='#E8C565' strokeWidth="8"
                         strokeLinecap="round"
                         strokeDasharray={`${SCORE_SEGMENTS.filled} ${SCORE_SEGMENTS.empty}`}
                         transform="rotate(-90 50 50)" />
@@ -200,7 +208,7 @@ export default function Dashboard() {
                       </Box>
                       <Chip label={rec.expectedImpact} size="small"
                         sx={{ height: 18, flexShrink: 0,
-                          bgcolor: rec.expectedImpact === 'High' ? '#1A1818' : C.grey100,
+                          bgcolor: rec.expectedImpact === 'High' ? '#1C1C1C' : C.grey100,
                           color:   rec.expectedImpact === 'High' ? C.yellowMain : C.textSecondary,
                           fontWeight: 600, fontSize: '0.5rem', letterSpacing: '0.04em',
                           '& .MuiChip-label': { px: '6px' } }} />

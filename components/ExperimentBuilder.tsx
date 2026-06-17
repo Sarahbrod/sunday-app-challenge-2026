@@ -14,18 +14,18 @@ import FormControl from '@mui/material/FormControl';
 import Slider from '@mui/material/Slider';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import { X } from 'lucide-react';
 import { EXPERIMENT_TEMPLATES } from '@/data/experiments';
 
 const C = {
-  textPrimary:   '#1A1818',
+  textPrimary:   '#1C1C1C',
   textSecondary: '#696764',
-  textMuted:     '#A8A5A0',
-  yellowMain:    '#F5E68A',
+  textMuted:     '#A8A5A2',
+  yellowMain:    '#E8C565',
   successDark:   '#1A5C3A',
-  warmMain:      '#F07830',
-  grey100:       '#F5F2ED',
-  grey300:       '#E0DDD8',
+  warmMain:      '#E8C565',
+  grey100:       '#F3EDE6',
+  grey300:       '#DDD7D0',
 };
 
 const CREATORS = ['TechTalk Daily','Pod & Chill','Creative Brief','Everyday Finance','Morning Mindset','Sarah Codes','Pixel Perfect','The Hustle Recap','GameStream Live','Vlog Universe','ByteSize News'];
@@ -83,7 +83,7 @@ export default function ExperimentBuilder({ open, onClose }: Props) {
           <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, mt: 0.25 }}>Define your hypothesis and what you're testing</Typography>
         </Box>
         <IconButton onClick={onClose} size="small" sx={{ color: C.textMuted, '&:hover': { color: C.textPrimary } }}>
-          <CloseRoundedIcon sx={{ fontSize: '1.125rem' }} />
+          <X size={18} />
         </IconButton>
       </Box>
 
@@ -190,7 +190,7 @@ export default function ExperimentBuilder({ open, onClose }: Props) {
             Cancel
           </Button>
           <Button onClick={handleSubmit} fullWidth variant="contained" disabled={!isValid}
-            sx={{ fontSize: '0.8125rem', fontWeight: 600, borderRadius: '10px', textTransform: 'none', py: 1, boxShadow: 'none', bgcolor: C.textPrimary, color: C.yellowMain, '&:hover': { bgcolor: '#2A2828' }, '&.Mui-disabled': { bgcolor: C.grey300, color: C.textMuted } }}>
+            sx={{ fontSize: '0.8125rem', fontWeight: 600, borderRadius: '10px', textTransform: 'none', py: 1, boxShadow: 'none', bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, '&.Mui-disabled': { bgcolor: C.grey300, color: C.textMuted } }}>
             Create experiment
           </Button>
         </Box>

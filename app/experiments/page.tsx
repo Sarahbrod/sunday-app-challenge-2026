@@ -10,49 +10,41 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@mui/material/LinearProgress';
-import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
-import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded';
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
-import LibraryBooksOutlinedIcon from '@mui/icons-material/LibraryBooksOutlined';
-import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, Plus, Sparkles, BookOpen, ChevronDown, CheckCircle, XCircle, MinusCircle } from 'lucide-react';
+
 import { ACTIVE_EXPERIMENTS, COMPLETED_EXPERIMENTS, RECOMMENDED_EXPERIMENTS, EXPERIMENT_TEMPLATES } from '@/data/experiments';
 import ExperimentBuilder from '@/components/ExperimentBuilder';
 
 const C = {
-  textPrimary:   '#1A1818',
+  textPrimary:   '#1C1C1C',
   textSecondary: '#696764',
-  textMuted:     '#A8A5A0',
+  textMuted:     '#A8A5A2',
   successDark:   '#1A5C3A',
   successMain:   '#6EC890',
   successLight:  '#D4F0E4',
-  errorMain:     '#E84030',
-  errorLight:    '#FCE0DA',
-  warmMain:      '#F07830',
-  yellowMain:    '#F5E68A',
-  yellowLight:   '#FEFCE8',
-  grey100:       '#F5F2ED',
-  grey300:       '#E0DDD8',
-  purpleMain:    '#8B6CF5',
-  purpleLight:   '#E8E0FC',
+  errorMain:     '#F21A27',
+  errorLight:    '#FCE0E0',
+  warmMain:      '#E8C565',
+  yellowMain:    '#E8C565',
+  yellowLight:   '#FBF6DC',
+  grey100:       '#F3EDE6',
+  grey300:       '#DDD7D0',
+  purpleMain:    '#7B9FD4',
+  purpleLight:   '#E0EAF8',
 };
 
 type Tab = 'recommended' | 'active' | 'completed';
 
 const IMPACT_STYLE = {
-  High:   { bg: '#1A1818', text: '#F5E68A' },
+  High:   { bg: '#1C1C1C', text: '#E8C565' },
   Medium: { bg: C.grey100, text: C.textSecondary },
   Low:    { bg: C.grey100, text: C.textMuted },
 } as const;
 
 const WINNER_STYLE = {
-  variant:      { icon: CheckCircleOutlineRoundedIcon,  color: '#1A5C3A', bg: '#D4F0E4', label: 'Variant won'   },
-  control:      { icon: CancelOutlinedIcon,             color: '#E84030', bg: '#FCE0DA', label: 'Control won'   },
-  inconclusive: { icon: RemoveCircleOutlineRoundedIcon, color: '#A8A5A0', bg: '#F5F2ED', label: 'Inconclusive'  },
+  variant:      { icon: CheckCircle,  color: '#1A5C3A', bg: '#D4F0E4', label: 'Variant won'   },
+  control:      { icon: XCircle,      color: '#F21A27', bg: '#FCE0E0', label: 'Control won'   },
+  inconclusive: { icon: MinusCircle,  color: '#A8A5A2', bg: '#F3EDE6', label: 'Inconclusive'  },
 } as const;
 
 export default function ExperimentLab() {
@@ -71,17 +63,17 @@ export default function ExperimentLab() {
     <Box sx={{ px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8 }}>
 
       {/* ── Header ── */}
-      <Box className="fade-in delay-1" sx={{ pt: 5.5, pb: 4, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+      <Box className="fade-in delay-1" sx={{ pt: { xs: 2.5, md: 5.5 }, pb: { xs: 3, md: 4 }, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h3" sx={{ color: C.textPrimary, mb: 1, fontWeight: 500 }}>Experiment Lab</Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" startIcon={<LibraryBooksOutlinedIcon />} onClick={() => setShowLibrary(v => !v)}
+          <Button variant="outlined" startIcon={<BookOpen size={16} />} onClick={() => setShowLibrary(v => !v)}
             sx={{ fontSize: '0.8125rem', color: C.textSecondary, borderColor: C.grey300, borderRadius: '10px', textTransform: 'none', fontWeight: 400, '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' } }}>
             Library
           </Button>
-          <Button variant="contained" startIcon={<AddRoundedIcon />} onClick={() => setBuilderOpen(true)}
-            sx={{ bgcolor: C.textPrimary, color: C.yellowMain, '&:hover': { bgcolor: '#2A2828' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
+          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setBuilderOpen(true)}
+            sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
             New experiment
           </Button>
         </Box>
@@ -104,7 +96,7 @@ export default function ExperimentLab() {
                   <Typography sx={{ fontSize: '0.625rem', color: C.textMuted, lineHeight: 1.4, mb: 1 }}>{t.category}</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: C.successDark }}>{t.avgImpact}</Typography>
-                    <Chip label={t.difficulty} size="small" sx={{ height: 14, fontSize: '0.5rem', fontWeight: 600, bgcolor: t.difficulty === 'Easy' ? C.successLight : t.difficulty === 'Medium' ? C.yellowLight : C.errorLight, color: t.difficulty === 'Easy' ? C.successDark : t.difficulty === 'Medium' ? '#7A4808' : C.errorMain, '& .MuiChip-label': { px: '5px' } }} />
+                    <Chip label={t.difficulty} size="small" sx={{ height: 14, fontSize: '0.5rem', fontWeight: 600, bgcolor: t.difficulty === 'Easy' ? C.successLight : t.difficulty === 'Medium' ? C.yellowLight : C.errorLight, color: t.difficulty === 'Easy' ? C.successDark : t.difficulty === 'Medium' ? '#B89530' : C.errorMain, '& .MuiChip-label': { px: '5px' } }} />
                   </Box>
                 </Box>
               ))}
@@ -151,7 +143,7 @@ export default function ExperimentLab() {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                       <Chip label={rec.expectedImpact} size="small" sx={{ height: 20, bgcolor: impact.bg, color: impact.text, fontWeight: 600, fontSize: '0.5625rem', letterSpacing: '0.04em', '& .MuiChip-label': { px: '8px' } }} />
                       <Button variant="contained" size="small" onClick={() => setBuilderOpen(true)}
-                        sx={{ bgcolor: C.textPrimary, color: C.yellowMain, '&:hover': { bgcolor: '#2A2828' }, fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', textTransform: 'none', boxShadow: 'none', px: 1.5, py: 0.5 }}>
+                        sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', textTransform: 'none', boxShadow: 'none', px: 1.5, py: 0.5 }}>
                         Start
                       </Button>
                     </Box>
@@ -168,10 +160,10 @@ export default function ExperimentLab() {
                       sx={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: C.grey300, '& .MuiLinearProgress-bar': { backgroundColor: rec.confidence >= 80 ? C.successDark : C.warmMain, borderRadius: 2 } }} />
                   </Box>
                   {template && (
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${C.grey100}`, display: 'flex', gap: 3 }}>
-                      <Box><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Metric</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary }}>{template.successMetric}</Typography></Box>
-                      <Box><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Avg impact</Typography><Typography sx={{ fontSize: '0.75rem', color: C.successDark, fontWeight: 600 }}>{template.avgImpact}</Typography></Box>
-                      <Box><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Time to result</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary }}>{template.timeToResult}</Typography></Box>
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${C.grey100}`, display: 'flex', gap: { xs: 1, sm: 2 } }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Metric</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.successMetric}</Typography></Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Avg impact</Typography><Typography sx={{ fontSize: '0.75rem', color: C.successDark, fontWeight: 600, lineHeight: 1.4 }}>{template.avgImpact}</Typography></Box>
+                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25, whiteSpace: 'nowrap' }}>Time to result</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.timeToResult}</Typography></Box>
                     </Box>
                   )}
                 </CardContent>
@@ -201,9 +193,9 @@ export default function ExperimentLab() {
                 <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.4 }}>{exp.variable.slice(0, 30)}</Typography>
                 <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary }}>{exp.successMetric}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  {exp.signal === 'up'      && <TrendingUpRoundedIcon   sx={{ fontSize: '0.9375rem', color: C.successDark }} />}
-                  {exp.signal === 'down'    && <TrendingDownRoundedIcon sx={{ fontSize: '0.9375rem', color: C.errorMain   }} />}
-                  {exp.signal === 'neutral' && <TrendingFlatRoundedIcon sx={{ fontSize: '0.9375rem', color: C.textMuted   }} />}
+                  {exp.signal === 'up'      && <TrendingUp size={15} color={C.successDark} />}
+                  {exp.signal === 'down'    && <TrendingDown size={15} color={C.errorMain} />}
+                  {exp.signal === 'neutral' && <Minus size={15} color={C.textMuted} />}
                   <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: exp.signal === 'up' ? C.successDark : exp.signal === 'down' ? C.errorMain : C.textMuted }}>{exp.currentLift}</Typography>
                 </Box>
                 <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textMuted }}>{exp.daysRunning}d</Typography>
@@ -228,7 +220,7 @@ export default function ExperimentLab() {
                   <Box onClick={() => setExpandedExp(isOpen ? null : exp.id)}
                     sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, cursor: 'pointer' }}>
                     <Box sx={{ width: 36, height: 36, borderRadius: '10px', backgroundColor: ws.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <WinIcon sx={{ fontSize: '1.125rem', color: ws.color }} />
+                      <WinIcon size={18} color={ws.color} />
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.375, flexWrap: 'wrap' }}>
@@ -242,7 +234,7 @@ export default function ExperimentLab() {
                         <Typography sx={{ fontSize: '1.25rem', fontWeight: 700, color: exp.winner === 'variant' ? C.successDark : exp.winner === 'control' ? C.errorMain : C.textMuted, letterSpacing: '-0.03em', lineHeight: 1 }}>{exp.lift}</Typography>
                         <Typography sx={{ fontSize: '0.625rem', color: C.textMuted }}>{exp.successMetric}</Typography>
                       </Box>
-                      <ExpandMoreRoundedIcon sx={{ fontSize: '1.25rem', color: C.textMuted, transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                      <ChevronDown size={18} color={C.textMuted} style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                     </Box>
                   </Box>
 
@@ -266,7 +258,7 @@ export default function ExperimentLab() {
                   <Collapse in={isOpen} timeout={200}>
                     <Box sx={{ mt: 2.5, pt: 2.5, borderTop: `1px solid ${C.grey300}` }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 2 }}>
-                        <AutoAwesomeRoundedIcon sx={{ fontSize: '0.875rem', color: C.purpleMain }} />
+                        <Sparkles size={14} color={C.purpleMain} />
                         <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.purpleMain }}>AI Analysis</Typography>
                       </Box>
                       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>

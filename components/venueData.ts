@@ -37,7 +37,7 @@ export const TIER_STYLE: Record<Tier, {
   label: string; pulse?: boolean;
 }> = {
   top:   { bg: '#1A5C3A', text: '#FFFFFF', bgPastel: '#C8EDD8', textPastel: '#1A5C3A', label: 'Top performer' },
-  good:  { bg: '#3B72C0', text: '#FFFFFF', bgPastel: '#C8D9F5', textPastel: '#1E3D73', label: 'On target' },
-  watch: { bg: '#F07830', text: '#FFFFFF', bgPastel: '#FCE8D0', textPastel: '#7A4808', label: 'Needs attention' },
-  risk:  { bg: '#E84030', text: '#FFFFFF', bgPastel: '#FCE0DA', textPastel: '#8C1808', label: 'At risk', pulse: true },
+  good:  { bg: '#7B9FD4', text: '#FFFFFF', bgPastel: '#E0EAF8', textPastel: '#2A5A8C', label: 'On target' },
+  watch: { bg: '#E8C565', text: '#2A1318', bgPastel: '#FBF6DC', textPastel: '#B89530', label: 'Needs attention' },
+  risk:  { bg: '#F21A27', text: '#FFFFFF', bgPastel: '#FCE0E0', textPastel: '#8C0015', label: 'At risk', pulse: true },
 };
