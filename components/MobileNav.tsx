@@ -17,7 +17,7 @@ const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
 ];
 
 const BRAND_AVATAR = 'https://api.dicebear.com/9.x/initials/svg?seed=SM&backgroundColor=f21a27&textColor=ffffff&fontWeight=700&fontSize=38';
-const USER_AVATAR  = 'https://api.dicebear.com/9.x/lorelei/svg?seed=AlexChen&backgroundColor=d4f0e4';
+const USER_AVATAR  = '/alex-avatar.jpeg';
 
 const ACTIVE_ICON = '#F21A27';
 const ACTIVE_BG   = 'rgba(242, 26, 39, 0.07)';

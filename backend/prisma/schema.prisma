@@ -1,0 +1,600 @@
+// =============================================================================
+// prisma/schema.prisma
+//
+// Purpose: Complete database schema for the media intelligence platform.
+// All models are defined here — let `prisma migrate` handle DDL exclusively.
+//
+// Security considerations:
+// - OAuth tokens in SSOProvider and PlatformConnection are AES-256-GCM
+//   encrypted at the application layer before persistence. Columns hold
+//   ciphertext only — never plaintext credentials.
+// - Soft deletes (deletedAt) are used instead of hard deletes to preserve
+//   audit trails and support compliance obligations.
+// - IP addresses are stored as SHA-256 hashes in AuditLog — never raw.
+// - Refresh tokens are stored as SHA-256 hashes only — the raw token is
+//   never persisted anywhere in the database.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  CREATOR
+  AGENCY
+  CONSULTANCY_CLIENT
+  ADMIN
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  AGENCY
+  ENTERPRISE
+}
+
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum SSOProviderType {
+  GOOGLE
+  APPLE
+}
+
+/// Platform integrations supported by the connection module.
+/// OAuth scopes required per platform are documented in the
+/// PlatformConnection model below and in src/modules/connections/scopes.ts.
+/// Client IDs, secrets, and OAuth URLs are never stored here.
+enum Platform {
+  YOUTUBE
+  SPOTIFY
+  APPLE_PODCASTS
+  BUZZSPROUT
+  PODBEAN
+  ANCHOR
+  SPREAKER
+  RSS_GENERIC
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+  ERROR
+}
+
+enum SyncStatus {
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum DataSource {
+  YOUTUBE_EXPORT
+  SPOTIFY_EXPORT
+  CUSTOM
+  UNKNOWN
+}
+
+enum YouTubeChannelStatus {
+  ACTIVE
+  INACTIVE
+  RECONNECT_REQUIRED
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+  /// File failed validation and has been isolated for manual review.
+  /// Never delete QUARANTINED records — they form part of the audit trail.
+  QUARANTINED
+}
+
+enum InsightSourceType {
+  YOUTUBE
+  SPOTIFY
+  APPLE_PODCASTS
+  CSV_UPLOAD
+  AGGREGATED
+}
+
+enum Period {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ALL_TIME
+}
+
+enum ReportType {
+  PERFORMANCE
+  GROWTH
+  REVENUE
+  AUDIENCE
+  CUSTOM
+}
+
+enum ReportSchedule {
+  WEEKLY
+  MONTHLY
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER & ACCOUNT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id               String           @id @default(uuid()) @db.Uuid
+  /// Always stored lowercase — normalise at the service layer before write.
+  email            String           @unique
+  displayName      String?
+  avatarUrl        String?
+  accountType      AccountType      @default(CREATOR)
+  subscriptionTier SubscriptionTier @default(FREE)
+  emailVerified    Boolean          @default(false)
+  isActive         Boolean          @default(true)
+  isSuspended      Boolean          @default(false)
+  /// Null when the account is SSO-only. Never set for Google/Apple-only users.
+  passwordHash     String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  lastLoginAt      DateTime?
+  /// Soft delete. Filter on `deletedAt IS NULL` in all user queries.
+  deletedAt        DateTime?
+
+  profile             UserProfile?
+  ownedOrganisations  Organisation[]       @relation("OrgOwner")
+  organisationMembers OrganisationMember[]
+  ssoProviders        SSOProvider[]
+  refreshTokens       RefreshToken[]
+  platformConnections PlatformConnection[]
+  googleAccounts      GoogleAccount[]
+  youtubeChannels     YouTubeChannel[]
+  csvUploads          CsvUpload[]
+  insights            Insight[]
+  insightReports      InsightReport[]
+  auditLogs           AuditLog[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserProfile {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
+
+  bio                     String?
+  websiteUrl              String?
+  timezone                String?  @default("UTC")
+  preferredCurrency       String?  @default("USD")
+  /// JSON shape: { email: boolean, push: boolean, weeklyDigest: boolean }
+  notificationPreferences Json?
+  onboardingCompletedAt   DateTime?
+  /// Tracks which step the user last completed in the onboarding flow.
+  onboardingStep          Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Organisation {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  /// URL-safe slug, globally unique. Validate format at the service layer.
+  slug         String   @unique
+  logoUrl      String?
+  billingEmail String
+  ownerId      String   @db.Uuid
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  owner               User                 @relation("OrgOwner", fields: [ownerId], references: [id])
+  members             OrganisationMember[]
+  platformConnections PlatformConnection[]
+  csvUploads          CsvUpload[]
+  insights            Insight[]
+  insightReports      InsightReport[]
+
+  @@index([slug])
+  @@map("organisations")
+}
+
+model OrganisationMember {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  organisationId String   @db.Uuid
+  role           OrgRole  @default(MEMBER)
+  joinedAt       DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+  @@map("organisation_members")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTHENTICATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Links a user account to an external SSO identity.
+/// accessToken and refreshToken are AES-256-GCM ciphertext — see
+/// src/utils/encryption.ts. Never store plaintext OAuth tokens.
+model SSOProvider {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  provider       SSOProviderType
+  /// The user's ID within the external provider's system.
+  providerUserId String
+  /// AES-256-GCM encrypted access token. Never plaintext.
+  accessToken    String
+  /// AES-256-GCM encrypted refresh token. Never plaintext. Nullable for
+  /// providers that do not issue refresh tokens.
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  scopes         String[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("sso_providers")
+}
+
+/// Persisted refresh tokens for rotation and revocation.
+/// The raw token is NEVER stored — only its SHA-256 hex hash.
+/// A DB breach therefore does not expose usable refresh tokens.
+model RefreshToken {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+
+  /// SHA-256(rawToken). Used for lookup without exposing the raw value.
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  /// Set when this token is rotated — points to its successor.
+  replacedByTokenId String?       @db.Uuid
+  createdAt         DateTime      @default(now())
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedByToken RefreshToken?   @relation("TokenRotation", fields: [replacedByTokenId], references: [id])
+  replacedTokens  RefreshToken[]  @relation("TokenRotation")
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PLATFORM CONNECTIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// OAuth-linked platform connections for YouTube, Spotify, and podcast hosts.
+///
+/// ┌─────────────────────────────────────────────────────────────────┐
+/// │ Required OAuth scopes — for documentation only.                  │
+/// │ Do NOT hardcode OAuth client IDs, secrets, or redirect URIs     │
+/// │ anywhere in the codebase. Load them from environment variables.  │
+/// │                                                                  │
+/// │ YouTube:                                                         │
+/// │   https://www.googleapis.com/auth/youtube.readonly              │
+/// │   https://www.googleapis.com/auth/yt-analytics.readonly         │
+/// │                                                                  │
+/// │ Spotify:                                                         │
+/// │   user-read-private                                              │
+/// │   user-read-email                                                │
+/// │   user-read-playback-state                                       │
+/// │                                                                  │
+/// │ Apple Podcasts: API key auth — see APPLE_PODCASTS_API_KEY env.  │
+/// │ All others: consult provider docs for current scope names.       │
+/// └─────────────────────────────────────────────────────────────────┘
+model PlatformConnection {
+  id                String           @id @default(uuid()) @db.Uuid
+  userId            String           @db.Uuid
+  /// Set for agency/org-owned connections.
+  organisationId    String?          @db.Uuid
+  platform          Platform
+  status            ConnectionStatus @default(ACTIVE)
+  platformUserId    String?
+  platformUsername  String?
+  platformAvatarUrl String?
+  /// AES-256-GCM encrypted. Never plaintext.
+  accessToken       String
+  /// AES-256-GCM encrypted. Null for platforms that do not issue refresh tokens.
+  refreshToken      String?
+  tokenExpiresAt    DateTime?
+  scopes            String[]
+  lastSyncedAt      DateTime?
+  /// Last sync error message, if any. Cleared on successful sync.
+  syncError         String?
+  /// Platform-specific snapshot data, e.g.
+  /// { "channelId": "UC...", "subscriberCountSnapshot": 142000 }
+  metadata          Json?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id])
+  syncLogs     ConnectionSyncLog[]
+
+  @@index([userId])
+  @@index([organisationId])
+  @@index([platform, status])
+  @@map("platform_connections")
+}
+
+model ConnectionSyncLog {
+  id             String     @id @default(uuid()) @db.Uuid
+  connectionId   String     @db.Uuid
+  syncedAt       DateTime   @default(now())
+  recordsFetched Int        @default(0)
+  status         SyncStatus
+  /// Null on SUCCESS. Contains sanitised error details on PARTIAL or FAILED.
+  errorMessage   String?
+
+  connection PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId])
+  @@index([syncedAt])
+  @@map("connection_sync_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV INGESTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Tracks uploaded CSV files through the ingestion pipeline.
+///
+/// File storage rules (enforced in middleware/fileValidator.ts):
+/// - Files are stored at a private server-side path (UPLOAD_STORAGE_PATH env).
+///   Never in a publicly accessible directory.
+/// - storedFilename is UUID-based and completely decoupled from user input.
+/// - Download URLs are signed and time-limited — the real storage path is
+///   never exposed to clients.
+/// - QUARANTINED files must not be deleted; they form part of the audit trail.
+model CsvUpload {
+  id             String       @id @default(uuid()) @db.Uuid
+  userId         String       @db.Uuid
+  organisationId String?      @db.Uuid
+
+  /// Sanitised original filename — path traversal characters stripped.
+  originalFilename String
+  /// UUID-based stored filename. Never derived from user input.
+  storedFilename   String       @unique
+  /// File size in bytes, validated against MAX_CSV_FILE_SIZE_MB env var.
+  fileSize         Int
+  /// Populated after parsing completes.
+  rowCount         Int?
+  columnHeaders    String[]
+  dataSource       DataSource   @default(UNKNOWN)
+  status           UploadStatus @default(PENDING)
+  uploadedAt       DateTime     @default(now())
+  processedAt      DateTime?
+  errorMessage     String?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id])
+  rows         CsvRow[]
+
+  @@index([userId])
+  @@index([organisationId])
+  @@index([status])
+  @@map("csv_uploads")
+}
+
+/// Stores each parsed row from a CSV upload in both raw and transformed form.
+/// rawData is the unmodified parsed value; transformedData has formula
+/// injection characters stripped. Both are retained for audit purposes.
+model CsvRow {
+  id       String @id @default(uuid()) @db.Uuid
+  uploadId String @db.Uuid
+  rowIndex Int
+
+  /// Original parsed cell values before sanitisation.
+  rawData         Json
+  /// Cell values after formula injection stripping and normalisation.
+  transformedData Json
+  /// True when one or more cells required sanitisation.
+  flagged         Boolean @default(false)
+  flagReason      String?
+
+  upload CsvUpload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([uploadId])
+  @@index([flagged])
+  @@map("csv_rows")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INSIGHTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Stores a single derived metric for a user or organisation at a given period.
+/// Designed for time-series queries — index on (userId, metricKey) and
+/// (sourceType, sourceId) for efficient filtering.
+model Insight {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @db.Uuid
+  organisationId String?           @db.Uuid
+  sourceType     InsightSourceType
+  /// FK to PlatformConnection.id or CsvUpload.id, depending on sourceType.
+  /// Null for AGGREGATED insights that span multiple sources.
+  sourceId       String?           @db.Uuid
+  /// Dotted metric name, e.g. "views.7d", "subscribers.growth_rate", "revenue.mrr".
+  metricKey      String
+  metricValue    Decimal           @db.Decimal(18, 6)
+  /// Unit string, e.g. "count", "percent", "currency_gbp", "seconds".
+  metricUnit     String
+  period         Period
+  periodStart    DateTime          @db.Date
+  periodEnd      DateTime          @db.Date
+  computedAt     DateTime          @default(now())
+  /// Arbitrary supplementary data, e.g. confidence intervals, data source URLs.
+  metadata       Json?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id])
+
+  @@index([userId, metricKey])
+  @@index([sourceType, sourceId])
+  @@index([period, periodStart])
+  @@map("insights")
+}
+
+/// A saved or scheduled analytics report definition.
+/// The filters JSON drives query construction at report-generation time.
+model InsightReport {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  organisationId String?         @db.Uuid
+  title          String
+  description    String?
+  /// Shape: { platforms: Platform[], dateRange: { from: date, to: date },
+  ///          metrics: string[], creatorIds?: string[] }
+  filters        Json
+  reportType     ReportType
+  /// Null for one-off reports.
+  schedule       ReportSchedule?
+  lastGeneratedAt DateTime?
+  nextScheduledAt DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation? @relation(fields: [organisationId], references: [id])
+
+  @@index([userId])
+  @@index([organisationId])
+  @@index([nextScheduledAt])
+  @@map("insight_reports")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Immutable audit trail. Rows must never be updated or deleted.
+///
+/// Security rules:
+/// - ipHash: SHA-256(rawIp) only. Raw IP addresses are never stored.
+/// - Never log tokens, passwords, cookies, or raw personal data.
+/// - Log auth events, connection changes, CSV uploads, and report generation.
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  /// Null for unauthenticated events (e.g. failed login attempts).
+  userId       String?  @db.Uuid
+  /// e.g. "auth.login", "auth.logout", "connection.created", "csv.uploaded"
+  action       String
+  /// e.g. "User", "PlatformConnection", "CsvUpload"
+  resourceType String?
+  resourceId   String?
+  /// SHA-256(rawIpAddress). Never store the raw IP.
+  ipHash       String
+  userAgent    String?
+  success      Boolean
+  timestamp    DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// YOUTUBE MULTI-CHANNEL
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Design decisions:
+// - GoogleAccount is separate from YouTubeChannel because one Google account
+//   can own multiple YouTube channels. The refresh token is stored once on
+//   the account to avoid duplication and so that revoking one channel does
+//   not require re-auth for sibling channels.
+// - refreshToken on GoogleAccount is AES-256-GCM encrypted — never plaintext.
+// - status on YouTubeChannel drives the reconnect UI without deleting data.
+//   Set to RECONNECT_REQUIRED on invalid_grant; INACTIVE on channel_not_found.
+// - When the last YouTubeChannel under a GoogleAccount is removed, the
+//   GoogleAccount row and its refresh token are also deleted and revoked.
+
+/// One row per Google account authorised by a user.
+/// A single FOBA user can connect multiple Google accounts.
+model GoogleAccount {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  /// Stable Google subject ID (never changes for an account).
+  googleUserId String
+  /// For display only — not used for auth.
+  email        String?
+  /// AES-256-GCM encrypted refresh token. Never plaintext.
+  refreshToken String
+  scopes       String[]
+  connectedAt  DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  youtubeChannels YouTubeChannel[]
+
+  @@unique([userId, googleUserId])
+  @@index([userId])
+  @@map("google_accounts")
+}
+
+/// One row per YouTube channel connected to a user's workspace.
+/// Multiple channels can exist under the same GoogleAccount.
+model YouTubeChannel {
+  id              String               @id @default(uuid()) @db.Uuid
+  userId          String               @db.Uuid
+  googleAccountId String               @db.Uuid
+  /// YouTube channel ID, e.g. "UCxxxxxx"
+  channelId       String
+  channelName     String?
+  thumbnailUrl    String?
+  subscriberCount BigInt?
+  status          YouTubeChannelStatus @default(ACTIVE)
+  connectedAt     DateTime             @default(now())
+  lastSyncedAt    DateTime?
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleAccount GoogleAccount @relation(fields: [googleAccountId], references: [id], onDelete: Cascade)
+  syncLogs      YouTubeChannelSyncLog[]
+
+  @@unique([userId, channelId])
+  @@index([userId, status])
+  @@map("youtube_channels")
+}
+
+model YouTubeChannelSyncLog {
+  id           String     @id @default(uuid()) @db.Uuid
+  channelId    String     @db.Uuid
+  syncedAt     DateTime   @default(now())
+  status       SyncStatus
+  /// Null on SUCCESS. Sanitised error detail on PARTIAL or FAILED.
+  errorMessage String?
+
+  channel YouTubeChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId])
+  @@index([syncedAt])
+  @@map("youtube_channel_sync_logs")
+}

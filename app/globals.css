@@ -52,6 +52,24 @@ html, body {
   backdrop-filter: blur(4px);
 }
 
+/* ── Empty-state skeleton shimmer ───────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.skel {
+  background: linear-gradient(90deg, #E8E2DC 25%, #F3EDE6 50%, #E8E2DC 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+  display: block;
+}
+.skel-static {
+  background: #E8E2DC;
+  border-radius: 4px;
+  display: block;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
 }

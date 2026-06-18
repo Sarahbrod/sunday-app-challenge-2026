@@ -1,19 +1,20 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid2';
-import { Upload, X, Plus } from 'lucide-react';
+import { Upload, Plus, TrendingUp, Users, Database } from 'lucide-react';
+import type { CsvUploadResult } from '@/hooks/useCsvData';
 import { TIER_STYLE } from '@/components/venueData';
 import type { Tier } from '@/components/venueData';
+import EmptyStateBanner from '@/components/EmptyStateBanner';
+import ConnectDataModal from '@/components/ConnectDataModal';
+import { useConnections } from '@/hooks/useConnections';
 import {
   AreaChart, Area, XAxis, Tooltip,
   CartesianGrid, ResponsiveContainer,
@@ -119,22 +120,137 @@ function TrendPanel({ label, dataKey, unit, color, latest, delta }: {
   );
 }
 
+const SOURCE_LABEL: Record<string, string> = {
+  YOUTUBE_EXPORT: 'YouTube Analytics',
+  SPOTIFY_EXPORT: 'Spotify Podcasters',
+  CUSTOM:         'Custom CSV',
+  UNKNOWN:        'CSV',
+};
+
+function CsvDataSection({ data }: { data: CsvUploadResult }) {
+  const labelCol = data.columnHeaders.find(h =>
+    /title|name|date|video|episode|show/i.test(h)
+  ) ?? data.columnHeaders[0];
+  const numericCol = data.columnHeaders.find(h =>
+    /views|streams|plays|listeners|impressions|starts|downloads/i.test(h)
+  );
+
+  const chartRows = numericCol && labelCol
+    ? data.sampleRows.slice(0, 12).map(r => ({
+        label: (r[labelCol] ?? '').slice(0, 18) || '—',
+        value: parseFloat((r[numericCol] ?? '0').replace(/,/g, '')) || 0,
+      })).filter(r => r.value > 0)
+    : [];
+
+  const displayLabel = SOURCE_LABEL[data.dataSource] ?? 'CSV';
+
+  return (
+    <Card className="fade-in delay-1" sx={{ mb: 3, border: `1px solid #DDD7D0` }}>
+      <CardContent sx={{ p: '24px !important' }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5, flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: '#F3EDE6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Database size={16} color={C.textMuted} />
+            </Box>
+            <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em' }}>
+              Your {displayLabel} data
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Chip label={`${data.rowCount.toLocaleString()} rows`}  size="small" sx={{ height: 18, bgcolor: '#F3EDE6', color: C.textSecondary, fontWeight: 600, fontSize: '0.5625rem', '& .MuiChip-label': { px: '7px' } }} />
+            <Chip label={`${data.columnCount} columns`} size="small" sx={{ height: 18, bgcolor: '#F3EDE6', color: C.textSecondary, fontWeight: 600, fontSize: '0.5625rem', '& .MuiChip-label': { px: '7px' } }} />
+            {data.truncated && <Chip label="Truncated" size="small" sx={{ height: 18, bgcolor: '#FFF0F0', color: '#B91C1C', fontWeight: 600, fontSize: '0.5625rem', '& .MuiChip-label': { px: '7px' } }} />}
+          </Box>
+        </Box>
+        {data.summaryStats && Object.keys(data.summaryStats).length > 0 && (
+          <Box sx={{ display: 'flex', gap: 3, mb: 2.5, mt: 1.5, flexWrap: 'wrap' }}>
+            {Object.entries(data.summaryStats).map(([k, v]) => (
+              <Box key={k}>
+                <Typography sx={{ fontSize: '1.125rem', fontWeight: 700, color: C.textPrimary, letterSpacing: '-0.03em', lineHeight: 1 }}>{v}</Typography>
+                <Typography sx={{ fontSize: '0.625rem', color: C.textMuted, mt: 0.375 }}>{k}</Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
+
+        {/* Chart */}
+        {chartRows.length > 1 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
+              {numericCol} by {labelCol}
+            </Typography>
+            <ResponsiveContainer width="100%" height={120}>
+              <BarChart data={chartRows} margin={{ top: 0, right: 4, bottom: 0, left: 0 }} barSize={14}>
+                <XAxis dataKey="label" tickLine={false} axisLine={false}
+                  tick={{ fill: C.textMuted, fontSize: 8 }} />
+                <YAxis hide />
+                <CartesianGrid vertical={false} stroke={C.grey200} strokeDasharray="3 0" strokeWidth={1} />
+                <Tooltip content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  const d = payload[0] as { payload: { label: string }; value: number };
+                  return (
+                    <Box sx={{ bgcolor: '#1C1C1C', px: 1.5, py: 1, borderRadius: '7px' }}>
+                      <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.45)', mb: 0.25 }}>{d.payload.label}</Typography>
+                      <Typography sx={{ fontSize: '0.9375rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                        {typeof d.value === 'number' ? d.value.toLocaleString() : d.value}
+                      </Typography>
+                    </Box>
+                  );
+                }} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
+                <Bar dataKey="value" fill={C.textPrimary} radius={[3, 3, 0, 0]} opacity={0.85} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        )}
+
+        {/* Data table */}
+        <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 1 }}>
+          Data preview · first {Math.min(data.sampleRows.length, 20)} rows
+        </Typography>
+        <Box sx={{ overflowX: 'auto', borderRadius: '8px', border: `1px solid ${C.grey300}` }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.6875rem' }}>
+            <thead>
+              <tr>
+                {data.columnHeaders.slice(0, 6).map(h => (
+                  <th key={h} style={{ padding: '7px 12px', textAlign: 'left', backgroundColor: '#F3EDE6', color: C.textMuted, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap', borderBottom: `1px solid ${C.grey300}`, fontSize: '0.5625rem' }}>
+                    {h.length > 20 ? h.slice(0, 20) + '…' : h}
+                  </th>
+                ))}
+                {data.columnHeaders.length > 6 && (
+                  <th style={{ padding: '7px 12px', backgroundColor: '#F3EDE6', color: C.textMuted, fontSize: '0.5rem', borderBottom: `1px solid ${C.grey300}` }}>+{data.columnHeaders.length - 6} more</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {data.sampleRows.slice(0, 20).map((row, i) => (
+                <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#F9F5EF' }}>
+                  {data.columnHeaders.slice(0, 6).map(h => (
+                    <td key={h} style={{ padding: '6px 12px', color: C.textSecondary, borderBottom: i < Math.min(data.sampleRows.length, 20) - 1 ? `1px solid #EDE8E1` : 'none', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {String(row[h] ?? '')}
+                    </td>
+                  ))}
+                  {data.columnHeaders.length > 6 && <td style={{ borderBottom: i < Math.min(data.sampleRows.length, 20) - 1 ? `1px solid #EDE8E1` : 'none' }} />}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Box>
+        {data.rowCount > 20 && (
+          <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, mt: 1.25 }}>
+            Showing 20 of {data.rowCount.toLocaleString()} rows.
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Analytics() {
-  const [importing, setImporting]         = useState(false);
-  const [imported, setImported]           = useState(false);
   const [uploadModalOpen, setUploadModal] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setImporting(true);
-    setTimeout(() => { setImporting(false); setImported(true); }, 1400);
-  };
-
-  const handleFile = () => {
-    setImporting(true);
-    setTimeout(() => { setImporting(false); setImported(true); }, 1400);
-  };
+  const { hasData, csvData, connections, youtubeChannels, connect, disconnect, connectYouTube, disconnectYouTubeChannel, reconnectYouTubeChannel, uploadCsv } = useConnections();
+  const empty = hasData !== true;
+  const showNetworkCharts = connections.length > 0 || youtubeChannels.some(c => c.status === 'ACTIVE');
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3, md: 4, lg: 5 }, pb: 8 }}>
@@ -153,16 +269,29 @@ export default function Analytics() {
           onClick={() => setUploadModal(true)}
           sx={{
             fontSize: '0.8125rem', fontWeight: 500,
-            color: imported ? C.successDark : C.textPrimary,
-            borderColor: imported ? C.successMain : C.textPrimary,
+            color: C.textSecondary,
+            borderColor: C.grey300,
             borderRadius: '10px', textTransform: 'none', px: 2, py: 0.875,
-            '&:hover': { backgroundColor: C.grey100 },
+            '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' },
             alignSelf: { xs: 'flex-start', sm: 'auto' },
           }}
         >
-          {imported ? 'Data imported' : 'Upload data'}
+          Connect data
         </Button>
       </Box>
+
+      {/* ── Empty state banner ── */}
+      {empty && (
+        <Box className="fade-in delay-1">
+          <EmptyStateBanner
+            onConnect={() => setUploadModal(true)}
+            label="Connect your data to see network performance"
+          />
+        </Box>
+      )}
+
+      {/* ── Uploaded CSV data ── */}
+      {csvData && <CsvDataSection data={csvData} />}
 
       {/* ── Performance trends ── */}
       <Card className="fade-in delay-2" sx={{ mb: 3 }}>
@@ -174,11 +303,33 @@ export default function Analytics() {
             <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>Last 12 weeks</Typography>
           </Box>
           <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, mb: 3.5 }}>Across all creators in the network</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: { xs: 4, md: 5 } }}>
-            <TrendPanel label="Weekly views"    dataKey="views"  unit="M" color={C.textPrimary} latest="52M"  delta="+8%"   />
-            <TrendPanel label="Subscriber gain" dataKey="subs"   unit="K" color={C.warmMain}    latest="25K"  delta="+12%"  />
-            <TrendPanel label="Avg engagement"  dataKey="engage" unit="%" color={C.purpleMain}  latest="6.9%" delta="+0.4%" />
-          </Box>
+
+          {showNetworkCharts ? (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: { xs: 4, md: 5 } }}>
+              <TrendPanel label="Weekly views"    dataKey="views"  unit="M" color={C.textPrimary} latest="52M"  delta="+8%"   />
+              <TrendPanel label="Subscriber gain" dataKey="subs"   unit="K" color={C.warmMain}    latest="25K"  delta="+12%"  />
+              <TrendPanel label="Avg engagement"  dataKey="engage" unit="%" color={C.purpleMain}  latest="6.9%" delta="+0.4%" />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: { xs: 4, md: 5 } }}>
+              {[
+                { label: 'Weekly views',    icon: <TrendingUp size={18} color="#A8A5A2" />, desc: 'Views per week across all channels' },
+                { label: 'Subscriber gain', icon: <Users size={18} color="#A8A5A2" />,      desc: 'Net new subscribers per week'       },
+                { label: 'Avg engagement',  icon: <TrendingUp size={18} color="#A8A5A2" />, desc: 'Average engagement rate per video'  },
+              ].map(({ label, icon, desc }) => (
+                <Box key={label}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1.5 }}>
+                    <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary }}>{label}</Typography>
+                    <span className="skel-static" style={{ width: 52, height: 18 }} />
+                  </Box>
+                  <Box sx={{ height: 90, borderRadius: '8px', backgroundColor: '#F3EDE6', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.75 }}>
+                    {icon}
+                    <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, textAlign: 'center', lineHeight: 1.4 }}>{desc}</Typography>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          )}
         </CardContent>
       </Card>
 
@@ -193,58 +344,88 @@ export default function Analytics() {
               </Typography>
               <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, mb: 3 }}>Creators by platform type</Typography>
 
-              <Box sx={{ mb: 3 }}>
-                <ResponsiveContainer width="100%" height={80}>
-                  <BarChart data={PLATFORM_DATA} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }} barSize={10}>
-                    <XAxis type="number" hide domain={[0, 100]} />
-                    <YAxis type="category" dataKey="label" width={72} tickLine={false} axisLine={false}
-                      tick={{ fill: C.textSecondary, fontSize: 12, fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }} />
-                    <CartesianGrid horizontal={false} stroke={C.grey200} strokeDasharray="3 0" strokeWidth={1} />
-                    <Tooltip cursor={{ fill: 'transparent' }}
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.length) return null;
-                        const d = payload[0].payload as typeof PLATFORM_DATA[0];
-                        return (
-                          <Box sx={{ bgcolor: '#1C1C1C', px: 1.5, py: 1, borderRadius: '7px' }}>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.45)', mb: 0.25 }}>{d.label}</Typography>
-                            <Typography sx={{ fontSize: '0.9375rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{d.pct}%</Typography>
-                            <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.45)' }}>{d.count} creators</Typography>
-                          </Box>
-                        );
-                      }}
-                    />
-                    <Bar dataKey="pct" radius={[0, 4, 4, 0]}>
-                      {PLATFORM_DATA.map((d) => <Cell key={d.label} fill={d.color} opacity={0.85} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-
-              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                {PLATFORM_DATA.map((p) => (
-                  <Box key={p.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.625 }}>
-                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: p.color }} />
-                    <Typography sx={{ fontSize: '0.6875rem', color: C.textSecondary }}>{p.label}</Typography>
-                    <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: C.textPrimary }}>{p.pct}%</Typography>
+              {showNetworkCharts ? (
+                <>
+                  <Box sx={{ mb: 3 }}>
+                    <ResponsiveContainer width="100%" height={80}>
+                      <BarChart data={PLATFORM_DATA} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }} barSize={10}>
+                        <XAxis type="number" hide domain={[0, 100]} />
+                        <YAxis type="category" dataKey="label" width={72} tickLine={false} axisLine={false}
+                          tick={{ fill: C.textSecondary, fontSize: 12, fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }} />
+                        <CartesianGrid horizontal={false} stroke={C.grey200} strokeDasharray="3 0" strokeWidth={1} />
+                        <Tooltip cursor={{ fill: 'transparent' }}
+                          content={({ active, payload }) => {
+                            if (!active || !payload?.length) return null;
+                            const d = payload[0].payload as typeof PLATFORM_DATA[0];
+                            return (
+                              <Box sx={{ bgcolor: '#1C1C1C', px: 1.5, py: 1, borderRadius: '7px' }}>
+                                <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.45)', mb: 0.25 }}>{d.label}</Typography>
+                                <Typography sx={{ fontSize: '0.9375rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>{d.pct}%</Typography>
+                                <Typography sx={{ fontSize: '0.625rem', color: 'rgba(255,255,255,0.45)' }}>{d.count} creators</Typography>
+                              </Box>
+                            );
+                          }}
+                        />
+                        <Bar dataKey="pct" radius={[0, 4, 4, 0]}>
+                          {PLATFORM_DATA.map((d) => <Cell key={d.label} fill={d.color} opacity={0.85} />)}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </Box>
-                ))}
-              </Box>
-
-              <Box sx={{ pt: 2.5, borderTop: `1px solid ${C.grey300}` }}>
-                <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
-                  Experiment results
-                </Typography>
-                {COMPLETED_EXPERIMENTS.slice(0, 4).map((exp) => (
-                  <Box key={exp.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.875, borderBottom: `1px solid ${C.grey100}` }}>
-                    <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {exp.title}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: exp.winner === 'variant' ? C.successDark : exp.winner === 'control' ? C.errorMain : C.textMuted, ml: 1.5, flexShrink: 0 }}>
-                      {exp.lift}
-                    </Typography>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    {PLATFORM_DATA.map((p) => (
+                      <Box key={p.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.625 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: p.color }} />
+                        <Typography sx={{ fontSize: '0.6875rem', color: C.textSecondary }}>{p.label}</Typography>
+                        <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: C.textPrimary }}>{p.pct}%</Typography>
+                      </Box>
+                    ))}
                   </Box>
-                ))}
-              </Box>
+                  <Box sx={{ pt: 2.5, borderTop: `1px solid ${C.grey300}` }}>
+                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>
+                      Experiment results
+                    </Typography>
+                    {COMPLETED_EXPERIMENTS.slice(0, 4).map((exp) => (
+                      <Box key={exp.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 0.875, borderBottom: `1px solid ${C.grey100}` }}>
+                        <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {exp.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: exp.winner === 'variant' ? C.successDark : exp.winner === 'control' ? C.errorMain : C.textMuted, ml: 1.5, flexShrink: 0 }}>
+                          {exp.lift}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              ) : (
+                <>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, mb: 3 }}>
+                    {[{ label: 'YouTube', w: '72%', color: '#F21A27' }, { label: 'Podcast', w: '18%', color: '#E8C565' }, { label: 'Newsletter', w: '10%', color: '#7B9FD4' }].map(p => (
+                      <Box key={p.label} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary, width: 72, flexShrink: 0 }}>{p.label}</Typography>
+                        <Box sx={{ flex: 1, height: 10, borderRadius: '0 4px 4px 0', backgroundColor: C.grey300 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                    {['YouTube', 'Podcast', 'Newsletter'].map(l => (
+                      <Box key={l} sx={{ display: 'flex', alignItems: 'center', gap: 0.625 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.grey300 }} />
+                        <span className="skel-static" style={{ width: 48, height: 10 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                  <Box sx={{ pt: 2.5, borderTop: `1px solid ${C.grey300}` }}>
+                    <Typography sx={{ fontSize: '0.5625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted, mb: 1.5 }}>Experiment results</Typography>
+                    {[80, 65, 50, 70].map((w, i) => (
+                      <Box key={i} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', py: 1, borderBottom: `1px solid ${C.grey100}` }}>
+                        <span className="skel-static" style={{ width: `${w}%`, height: 10 }} />
+                        <span className="skel-static" style={{ width: 36, height: 10, marginLeft: 12 }} />
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -289,77 +470,64 @@ export default function Analytics() {
             </Button>
           </Box>
           <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, mb: 3 }}>All creators in the network</Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 1 }}>
-            {CREATORS_ROSTER.map((c) => {
-              const ts = TIER_STYLE[c.tier];
-              return (
-                <Box key={c.name} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderRadius: '8px', border: `1px solid ${C.grey300}`, '&:hover': { borderColor: C.textPrimary } }}>
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: ts.bg, flexShrink: 0 }} />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <Box sx={{ width: 6, height: 6, borderRadius: '2px', bgcolor: PLATFORM_COLORS[c.platform] ?? C.textMuted }} />
-                      <Typography sx={{ fontSize: '0.625rem', color: C.textMuted }}>{c.platform} · {c.subs}</Typography>
+          {showNetworkCharts ? (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 1 }}>
+              {CREATORS_ROSTER.map((c) => {
+                const ts = TIER_STYLE[c.tier];
+                return (
+                  <Box key={c.name} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderRadius: '8px', border: `1px solid ${C.grey300}`, '&:hover': { borderColor: C.textPrimary } }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: ts.bg, flexShrink: 0 }} />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '2px', bgcolor: PLATFORM_COLORS[c.platform] ?? C.textMuted }} />
+                        <Typography sx={{ fontSize: '0.625rem', color: C.textMuted }}>{c.platform} · {c.subs}</Typography>
+                      </Box>
                     </Box>
                   </Box>
+                );
+              })}
+            </Box>
+          ) : (
+            <>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 1, mb: 3 }}>
+                {[75, 60, 80, 55, 70, 65, 72, 58].map((w, i) => (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1.25, borderRadius: '8px', border: `1px solid ${C.grey300}` }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: C.grey300, flexShrink: 0 }} />
+                    <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                      <span className="skel-static" style={{ width: `${w}%`, height: 10 }} />
+                      <span className="skel-static" style={{ width: '45%', height: 8 }} />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, py: 2 }}>
+                <Box sx={{ width: 40, height: 40, borderRadius: '12px', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Users size={20} color={C.textMuted} />
                 </Box>
-              );
-            })}
-          </Box>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: C.textPrimary, mb: 0.375, letterSpacing: '-0.01em' }}>No creators added yet</Typography>
+                  <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary }}>Connect your account to track creator performance.</Typography>
+                </Box>
+              </Box>
+            </>
+          )}
         </CardContent>
       </Card>
 
-      {/* ── Upload data modal ── */}
-      <Dialog
+      <ConnectDataModal
         open={uploadModalOpen}
         onClose={() => setUploadModal(false)}
-        maxWidth="xs"
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: '16px', boxShadow: '0 24px 60px rgba(0,0,0,0.16)', m: 2 } } }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, pt: 3, pb: 2, borderBottom: `1px solid ${C.grey300}` }}>
-          <Box>
-            <Typography sx={{ fontSize: '1.0625rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em' }}>Data import</Typography>
-            <Typography sx={{ fontSize: '0.75rem', color: C.textMuted, mt: 0.25 }}>Upload YouTube Analytics CSV to enrich experiment results</Typography>
-          </Box>
-          <IconButton onClick={() => setUploadModal(false)} size="small" sx={{ color: C.textMuted, '&:hover': { color: C.textPrimary } }}>
-            <X size={18} />
-          </IconButton>
-        </Box>
-
-        <DialogContent sx={{ px: 3, py: 2.5 }}>
-          {imported ? (
-            <Box sx={{ p: 2.5, borderRadius: '10px', backgroundColor: C.successLight, border: `1px solid ${C.successMain}`, mb: 2 }}>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: C.successDark, mb: 0.25 }}>CSV imported successfully</Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: C.successDark, opacity: 0.8 }}>analytics_june_2026.csv · 847 rows · 14 columns · matched to 8 active experiments</Typography>
-            </Box>
-          ) : (
-            <Box
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              onClick={() => fileRef.current?.click()}
-              sx={{ p: 3, borderRadius: '10px', border: `2px dashed ${importing ? C.yellowMain : C.grey300}`, backgroundColor: importing ? C.yellowLight : 'transparent', textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s ease', mb: 2, '&:hover': { borderColor: C.textPrimary, backgroundColor: C.grey100 } }}
-            >
-              <input ref={fileRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleFile} />
-              <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>{importing ? '⏳' : '📊'}</Typography>
-              <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, color: C.textPrimary, mb: 0.5 }}>
-                {importing ? 'Importing…' : 'Drop YouTube Analytics CSV here'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: C.textMuted }}>
-                {importing ? 'Matching rows to experiments' : 'or click to browse · YouTube Studio → Analytics → Export'}
-              </Typography>
-            </Box>
-          )}
-
-          <Box sx={{ p: 1.5, borderRadius: '8px', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box>
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, color: C.textPrimary }}>YouTube API connection</Typography>
-              <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>Real-time sync · coming soon</Typography>
-            </Box>
-            <Chip label="Coming soon" size="small" sx={{ height: 18, bgcolor: C.grey300, color: C.textMuted, fontWeight: 600, fontSize: '0.5rem', '& .MuiChip-label': { px: '7px' } }} />
-          </Box>
-        </DialogContent>
-      </Dialog>
+        connections={connections}
+        youtubeChannels={youtubeChannels}
+        onConnect={connect}
+        onDisconnect={disconnect}
+        onConnectYouTube={connectYouTube}
+        onDisconnectYouTubeChannel={disconnectYouTubeChannel}
+        onReconnectYouTubeChannel={reconnectYouTubeChannel}
+        onCsvUpload={uploadCsv}
+        onViewData={() => setUploadModal(false)}
+      />
 
     </Box>
   );

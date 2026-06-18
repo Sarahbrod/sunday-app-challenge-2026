@@ -16,7 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { LayoutGrid, FlaskConical, BarChart2, PanelLeft, ChevronsUpDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-const EXPANDED_W  = 220;
+const EXPANDED_W  = 248;
 const COLLAPSED_W = 60;
 
 const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
@@ -32,7 +32,7 @@ const INACTIVE_TEXT = '#6B6764';
 const INACTIVE_ICON = '#A8A5A2';
 
 const BRAND_AVATAR = 'https://api.dicebear.com/9.x/initials/svg?seed=SM&backgroundColor=f21a27&textColor=ffffff&fontWeight=700&fontSize=38';
-const USER_AVATAR  = 'https://api.dicebear.com/9.x/lorelei/svg?seed=AlexChen&backgroundColor=d4f0e4';
+const USER_AVATAR  = '/alex-avatar.jpeg';
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -72,7 +72,7 @@ export default function Sidebar() {
           <Avatar src={BRAND_AVATAR} sx={{ width: 36, height: 36, flexShrink: 0, backgroundColor: '#F21A27' }}>S</Avatar>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flex: 1, minWidth: 0, cursor: 'pointer', '&:hover .chevron': { color: '#1C1C1C' } }}>
-            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: '#1C1C1C', letterSpacing: '-0.02em', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: '#1C1C1C', letterSpacing: '-0.02em', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
               Shameless Media
             </Typography>
             <Box className="chevron" sx={{ display: 'flex', color: '#A8A5A2', transition: 'color 0.14s ease', ml: 0.25 }}>

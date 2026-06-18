@@ -1,0 +1,100 @@
+# =============================================================================
+# .gitignore — media intelligence platform backend
+#
+# This file deliberately prevents secrets, credentials, generated artefacts,
+# uploaded files, and local-only configuration from being committed.
+#
+# If you find yourself trying to force-add any file listed here, stop and
+# ask whether it truly belongs in version control. Secrets never do.
+# =============================================================================
+
+# ─── Secrets & credentials ────────────────────────────────────────────────────
+# These files must NEVER be committed, even temporarily.
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development.local
+
+# Private keys, certificates, and secrets files
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.jks
+*_rsa
+*_rsa.pub
+id_rsa
+id_ed25519
+secrets.json
+credentials.json
+service-account*.json
+keyfile*.json
+
+# ─── Node.js ──────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnp
+.pnp.js
+.yarn/cache
+.yarn/unplugged
+
+# ─── TypeScript ───────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+*.js.map
+*.d.ts.map
+tsconfig.tsbuildinfo
+
+# ─── Prisma ───────────────────────────────────────────────────────────────────
+# Generated client — rebuilt by `prisma generate` on each install.
+.prisma/
+prisma/generated/
+# SQLite files (used in test environments only — never PostgreSQL credentials)
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Uploaded files & storage ─────────────────────────────────────────────────
+# File uploads must never be committed. Configure UPLOAD_STORAGE_PATH to point
+# to an out-of-repo location or a mounted volume in production.
+/uploads/
+/storage/
+/tmp/
+/temp/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+*.log.*
+
+# ─── Test artefacts ───────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+
+# ─── IDE & OS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+.cache/
+.turbo/
+*.tgz
