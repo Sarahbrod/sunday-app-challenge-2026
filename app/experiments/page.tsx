@@ -35,7 +35,7 @@ const C = {
   purpleLight:   '#E0EAF8',
 };
 
-type Tab = 'recommended' | 'active' | 'completed';
+type Tab = 'active' | 'completed';
 
 const IMPACT_STYLE = {
   High:   { bg: '#1C1C1C', text: '#E8C565' },
@@ -50,18 +50,16 @@ const WINNER_STYLE = {
 } as const;
 
 export default function ExperimentLab() {
-  const [tab, setTab] = useState<Tab>('recommended');
+  const [tab, setTab] = useState<Tab>('active');
   const [builderOpen, setBuilderOpen] = useState(false);
   const [expandedExp, setExpandedExp] = useState<string | null>(null);
-  const [showLibrary,  setShowLibrary]  = useState(false);
   const [connectOpen,  setConnectOpen]  = useState(false);
   const { connections, youtubeChannels, connect, disconnect, connectYouTube, disconnectYouTubeChannel, reconnectYouTubeChannel, uploadCsv } = useConnections();
   const showLiveData = connections.length > 0 || youtubeChannels.some(c => c.status === 'ACTIVE');
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'recommended', label: 'Recommended', count: RECOMMENDED_EXPERIMENTS.length     },
-    { key: 'active',      label: 'Active',       count: showLiveData ? ACTIVE_EXPERIMENTS.length : 0      },
-    { key: 'completed',   label: 'Completed',    count: showLiveData ? COMPLETED_EXPERIMENTS.length : 0   },
+    { key: 'active',    label: 'Active',    count: showLiveData ? ACTIVE_EXPERIMENTS.length : 0    },
+    { key: 'completed', label: 'Completed', count: showLiveData ? COMPLETED_EXPERIMENTS.length : 0 },
   ];
 
   return (
@@ -72,22 +70,10 @@ export default function ExperimentLab() {
         <Box>
           <Typography variant="h3" sx={{ color: C.textPrimary, mb: 1, fontWeight: 500 }}>Experiment Lab</Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button variant="outlined" startIcon={<BookOpen size={16} />} onClick={() => setShowLibrary(v => !v)}
-            sx={{ fontSize: '0.8125rem', color: C.textSecondary, borderColor: C.grey300, borderRadius: '10px', textTransform: 'none', fontWeight: 500, px: 2, py: 0.875, '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' } }}>
-            Library
-          </Button>
-          {!showLiveData && (
-            <Button variant="outlined" startIcon={<Link2 size={16} />} onClick={() => setConnectOpen(true)}
-              sx={{ fontSize: '0.8125rem', color: C.textSecondary, borderColor: C.grey300, borderRadius: '10px', textTransform: 'none', fontWeight: 500, px: 2, py: 0.875, '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' } }}>
-              Connect YouTube
-            </Button>
-          )}
-          <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setBuilderOpen(true)}
-            sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
-            New experiment
-          </Button>
-        </Box>
+        <Button variant="contained" startIcon={<Plus size={16} />} onClick={() => setBuilderOpen(true)}
+          sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
+          New experiment
+        </Button>
       </Box>
 
       {/* ── Experiment library ── */}
@@ -132,58 +118,6 @@ export default function ExperimentLab() {
         })}
       </Box>
 
-      {/* ── Recommended ── */}
-      {tab === 'recommended' && (
-        <Box className="fade-in delay-2" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {RECOMMENDED_EXPERIMENTS.map((rec) => {
-            const template = EXPERIMENT_TEMPLATES.find(t => t.id === rec.templateId);
-            const impact = IMPACT_STYLE[rec.expectedImpact];
-            return (
-              <Card key={rec.id}>
-                <CardContent sx={{ p: '20px !important' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1.5 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Box sx={{ width: 40, height: 40, borderRadius: '10px', backgroundColor: C.yellowLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>
-                        {template?.icon}
-                      </Box>
-                      <Box>
-                        <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.015em', lineHeight: 1.2, mb: 0.25 }}>{rec.templateName}</Typography>
-                        <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary }}>{rec.creator}</Typography>
-                      </Box>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                      <Chip label={rec.expectedImpact} size="small" sx={{ height: 20, bgcolor: impact.bg, color: impact.text, fontWeight: 600, fontSize: '0.5625rem', letterSpacing: '0.04em', '& .MuiChip-label': { px: '8px' } }} />
-                      <Button variant="contained" size="small" onClick={() => setBuilderOpen(true)}
-                        sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', textTransform: 'none', boxShadow: 'none', px: 1.5, py: 0.5 }}>
-                        Start
-                      </Button>
-                    </Box>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, lineHeight: 1.6, letterSpacing: '-0.005em', mb: 1.5 }}>
-                    {rec.rationale}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted }}>Confidence</Typography>
-                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: C.textPrimary }}>{rec.confidence}%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={rec.confidence}
-                      sx={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: C.grey300, '& .MuiLinearProgress-bar': { backgroundColor: rec.confidence >= 80 ? C.successDark : C.warmMain, borderRadius: 2 } }} />
-                  </Box>
-                  {template && (
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${C.grey100}`, display: 'flex', gap: { xs: 1, sm: 2 } }}>
-                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Metric</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.successMetric}</Typography></Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Avg impact</Typography><Typography sx={{ fontSize: '0.75rem', color: C.successDark, fontWeight: 600, lineHeight: 1.4 }}>{template.avgImpact}</Typography></Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25, whiteSpace: 'nowrap' }}>Time to result</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.timeToResult}</Typography></Box>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </Box>
-      )}
-
       {/* ── Active ── */}
       {tab === 'active' && (
         <Card className="fade-in delay-2">
@@ -195,25 +129,78 @@ export default function ExperimentLab() {
             </Box>
 
             {!showLiveData ? (
-              <Box sx={{ py: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FlaskConical size={22} color={C.textMuted} />
-                </Box>
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '0.9375rem', fontWeight: 500, color: C.textPrimary, mb: 0.5, letterSpacing: '-0.015em' }}>Connect YouTube to track live results</Typography>
-                  <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, maxWidth: 340, lineHeight: 1.6 }}>
-                    Link your YouTube channel so FOBA can measure experiment performance in real time.
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Box>
+                {/* Get started prompt */}
+                <Box sx={{ py: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5, borderBottom: `1px solid ${C.grey300}` }}>
+                  <Box sx={{ width: 44, height: 44, borderRadius: '12px', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FlaskConical size={22} color={C.textMuted} />
+                  </Box>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '0.9375rem', fontWeight: 500, color: C.textPrimary, mb: 0.5, letterSpacing: '-0.015em' }}>Connect YouTube to track live results</Typography>
+                    <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, maxWidth: 340, lineHeight: 1.6 }}>
+                      Link your YouTube channel so FOBA can measure experiment performance in real time.
+                    </Typography>
+                  </Box>
                   <Button variant="contained" startIcon={<Link2 size={15} />} onClick={() => setConnectOpen(true)}
                     sx={{ bgcolor: C.textPrimary, color: '#FFFFFF', '&:hover': { bgcolor: '#2A2828' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
                     Connect YouTube
                   </Button>
-                  <Button variant="outlined" startIcon={<Sparkles size={15} />} onClick={() => setTab('recommended')}
-                    sx={{ color: C.textSecondary, borderColor: C.grey300, borderRadius: '10px', fontWeight: 500, fontSize: '0.8125rem', px: 2, textTransform: 'none', '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' } }}>
-                    Browse recommendations
-                  </Button>
+                </Box>
+
+                {/* Recommendations */}
+                <Box sx={{ pt: 2.5, pb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                    <Sparkles size={14} color={C.textMuted} />
+                    <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textMuted }}>
+                      Recommended experiments to start
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {RECOMMENDED_EXPERIMENTS.map((rec) => {
+                      const template = EXPERIMENT_TEMPLATES.find(t => t.id === rec.templateId);
+                      const impact = IMPACT_STYLE[rec.expectedImpact];
+                      return (
+                        <Box key={rec.id} sx={{ p: 2, borderRadius: '10px', border: `1px solid ${C.grey300}` }}>
+                          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2, mb: 1.25 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                              <Box sx={{ width: 36, height: 36, borderRadius: '8px', backgroundColor: C.yellowLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem', flexShrink: 0 }}>
+                                {template?.icon}
+                              </Box>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.015em', lineHeight: 1.2, mb: 0.2 }}>{rec.templateName}</Typography>
+                                <Typography sx={{ fontSize: '0.75rem', color: C.textSecondary }}>{rec.creator}</Typography>
+                              </Box>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                              <Chip label={rec.expectedImpact} size="small" sx={{ height: 20, bgcolor: impact.bg, color: impact.text, fontWeight: 600, fontSize: '0.5625rem', letterSpacing: '0.04em', '& .MuiChip-label': { px: '8px' } }} />
+                              <Button variant="contained" size="small" onClick={() => setBuilderOpen(true)}
+                                sx={{ bgcolor: '#222222', color: '#FFFFFF', '&:hover': { bgcolor: '#3A3A3A' }, fontWeight: 600, fontSize: '0.75rem', borderRadius: '8px', textTransform: 'none', boxShadow: 'none', px: 1.5, py: 0.5 }}>
+                                Start
+                              </Button>
+                            </Box>
+                          </Box>
+                          <Typography sx={{ fontSize: '0.8125rem', color: C.textSecondary, lineHeight: 1.6, letterSpacing: '-0.005em', mb: 1.25 }}>
+                            {rec.rationale}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted }}>Confidence</Typography>
+                              <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: C.textPrimary }}>{rec.confidence}%</Typography>
+                            </Box>
+                            <LinearProgress variant="determinate" value={rec.confidence}
+                              sx={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: C.grey300, '& .MuiLinearProgress-bar': { backgroundColor: rec.confidence >= 80 ? C.successDark : C.warmMain, borderRadius: 2 } }} />
+                          </Box>
+                          {template && (
+                            <Box sx={{ mt: 1.25, pt: 1.25, borderTop: `1px solid ${C.grey100}`, display: 'flex', gap: { xs: 1, sm: 2 } }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Metric</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.successMetric}</Typography></Box>
+                              <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25 }}>Avg impact</Typography><Typography sx={{ fontSize: '0.75rem', color: C.successDark, fontWeight: 600, lineHeight: 1.4 }}>{template.avgImpact}</Typography></Box>
+                              <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textMuted, mb: 0.25, whiteSpace: 'nowrap' }}>Time to result</Typography><Typography sx={{ fontSize: '0.75rem', color: C.textPrimary, lineHeight: 1.4 }}>{template.timeToResult}</Typography></Box>
+                            </Box>
+                          )}
+                        </Box>
+                      );
+                    })}
+                  </Box>
                 </Box>
               </Box>
             ) : (
@@ -262,9 +249,9 @@ export default function ExperimentLab() {
                       sx={{ bgcolor: C.textPrimary, color: '#FFFFFF', '&:hover': { bgcolor: '#2A2828' }, fontWeight: 600, fontSize: '0.8125rem', borderRadius: '10px', px: 2, textTransform: 'none', boxShadow: 'none' }}>
                       Connect YouTube
                     </Button>
-                    <Button variant="outlined" startIcon={<Sparkles size={15} />} onClick={() => setTab('recommended')}
+                    <Button variant="outlined" startIcon={<Sparkles size={15} />} onClick={() => setTab('active')}
                       sx={{ color: C.textSecondary, borderColor: C.grey300, borderRadius: '10px', fontWeight: 500, fontSize: '0.8125rem', px: 2, textTransform: 'none', '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' } }}>
-                      See recommended tests
+                      See recommendations
                     </Button>
                   </Box>
                 </Box>

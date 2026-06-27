@@ -262,7 +262,7 @@ export default function Analytics() {
         alignItems: { xs: 'flex-start', sm: 'center' },
         justifyContent: 'space-between', gap: { xs: 2, sm: 0 },
       }}>
-        <Typography variant="h3" sx={{ color: C.textPrimary, fontWeight: 500 }}>Analytics</Typography>
+        <Typography variant="h3" sx={{ color: C.textPrimary, fontWeight: 500 }}>Performance</Typography>
         <Button
           variant="outlined"
           startIcon={<Upload size={16} />}

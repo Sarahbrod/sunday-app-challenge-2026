@@ -22,7 +22,7 @@ const COLLAPSED_W = 60;
 const NAV_ITEMS: { label: string; icon: LucideIcon; href: string }[] = [
   { label: 'Home',        icon: LayoutGrid,   href: '/'            },
   { label: 'Experiments', icon: FlaskConical,  href: '/experiments' },
-  { label: 'Analytics',   icon: BarChart2,     href: '/analytics'   },
+  { label: 'Performance', icon: BarChart2,     href: '/analytics'   },
 ];
 
 const HIGHLIGHT     = 'rgba(242, 26, 39, 0.1)';
