@@ -12,8 +12,10 @@ import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
 import Switch from '@mui/material/Switch';
 import Divider from '@mui/material/Divider';
+import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid2';
-import { Check, Plus, Camera, Bell, Plug, Users, Shield, LogOut } from 'lucide-react';
+import { Check, Plus, Camera, Bell, Plug, Users, Shield, LogOut, Unlink, AlertTriangle, RefreshCw } from 'lucide-react';
+import { useConnections } from '@/hooks/useConnections';
 
 const C = {
   textPrimary:   '#1C1C1C',
@@ -23,6 +25,7 @@ const C = {
   successLight:  '#D4F0E4',
   successMain:   '#6EC890',
   errorMain:     '#F21A27',
+  warnMain:      '#B45309',
   yellowMain:    '#E8C565',
   yellowLight:   '#FBF6DC',
   grey100:       '#F3EDE6',
@@ -38,13 +41,30 @@ const TEAM_MEMBERS = [
   { name: 'Priya Mehta',role: 'Creator Manager',  email: 'priya@shamelessmedia.com', avatar: 'P', owner: false },
 ];
 
-const INTEGRATIONS = [
-  { name: 'YouTube Analytics CSV',  desc: 'Manual upload via Analytics page',      status: 'connected', icon: '📊' },
-  { name: 'YouTube Data API',       desc: 'Real-time sync · channel & video data', status: 'soon',      icon: '▶️'  },
-  { name: 'Spotify Podcasters API', desc: 'Episode plays, listener retention',      status: 'soon',      icon: '🎙️' },
-  { name: 'Substack API',           desc: 'Open rates, subscriber growth',          status: 'soon',      icon: '✉️'  },
-  { name: 'Google Analytics',       desc: 'Website traffic from video links',       status: 'soon',      icon: '📈' },
-];
+// Brand icons for OAuth platforms
+function YouTubeIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29.1 29.1 0 0 0 1 12a29.1 29.1 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29.1 29.1 0 0 0 23 12a29.1 29.1 0 0 0-.46-5.58z" fill="#FF0000"/>
+      <polygon points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02" fill="#FFFFFF"/>
+    </svg>
+  );
+}
+
+function SpotifyIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="12" fill="#1DB954"/>
+      <path d="M17.9 11.15c-2.9-1.72-7.69-1.88-10.46-1.04a.88.88 0 0 1-.54-1.68c3.18-.96 8.47-.78 11.82 1.21a.88.88 0 0 1-.82 1.51zm-.1 2.7a.73.73 0 0 1-1-.24c-2.41-1.48-6.09-1.91-8.94-1.04a.73.73 0 0 1-.42-1.4c3.26-.99 7.32-.51 10.11 1.19a.73.73 0 0 1 .25 1.49zm-1.15 2.6a.59.59 0 0 1-.81-.2c-2.1-1.28-4.73-1.57-7.84-.86a.59.59 0 0 1-.26-1.15c3.4-.77 6.32-.44 8.71 1a.59.59 0 0 1 .2.81z" fill="white"/>
+    </svg>
+  );
+}
+
+function fmtSubs(n: number) {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
+  return n.toLocaleString();
+}
 
 const NOTIF_ITEMS = [
   { key: 'experimentResults'  as const, label: 'Experiment results',   desc: 'When an experiment reaches significance'      },
@@ -86,11 +106,63 @@ export default function Account() {
   const [role,  setRole]  = useState('Growth Director');
   const [saved, setSaved] = useState(false);
 
+  const {
+    connections,
+    youtubeChannels,
+    connect,
+    disconnect,
+    connectYouTube,
+    disconnectYouTubeChannel,
+    reconnectYouTubeChannel,
+  } = useConnections();
+
+  const [ytLoading,      setYtLoading]      = useState(false);
+  const [ytError,        setYtError]        = useState<string | null>(null);
+  const [spotifyLoading, setSpotifyLoading] = useState(false);
+  const [disconnecting,  setDisconnecting]  = useState<string | null>(null);
+
+  const handleConnectYouTube = async () => {
+    setYtLoading(true);
+    setYtError(null);
+    try {
+      await connectYouTube();
+    } catch (err) {
+      setYtError(err instanceof Error ? err.message : 'Connection failed.');
+    } finally {
+      setYtLoading(false);
+    }
+  };
+
+  const handleDisconnectYouTube = async (channelId: string) => {
+    setDisconnecting(channelId);
+    try {
+      await disconnectYouTubeChannel(channelId, true);
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
+  const handleConnectSpotify = async () => {
+    setSpotifyLoading(true);
+    try {
+      await connect('spotify');
+    } finally {
+      setSpotifyLoading(false);
+    }
+  };
+
+  const handleDisconnectSpotify = async () => {
+    setDisconnecting('spotify');
+    try {
+      await disconnect('spotify');
+    } finally {
+      setDisconnecting(null);
+    }
+  };
+
   const handleLogout = () => {
-    // Clear session data — tokens are server-side only; this clears client metadata
     localStorage.removeItem('onboarding_complete');
     localStorage.removeItem('has_data');
-    sessionStorage.removeItem('connection_metadata');
     router.replace('/onboarding');
   };
 
@@ -326,27 +398,152 @@ export default function Account() {
             {/* Integrations */}
             <Card>
               <CardContent sx={{ p: '24px !important' }}>
-                <SectionHeader icon={<Plug size={15} />}>Integrations</SectionHeader>
-                {INTEGRATIONS.map((integ, i) => (
+                <SectionHeader icon={<Plug size={15} />}>Connected accounts</SectionHeader>
+
+                {/* ── YouTube ── */}
+                <Box sx={{ mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: '10px', backgroundColor: '#FFF0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <YouTubeIcon size={18} />
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em' }}>YouTube</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>
+                        {youtubeChannels.length > 0 ? `${youtubeChannels.length} channel${youtubeChannels.length > 1 ? 's' : ''} connected` : 'Connect to track live video performance'}
+                      </Typography>
+                    </Box>
+                    <Button
+                      onClick={handleConnectYouTube}
+                      disabled={ytLoading}
+                      size="small"
+                      variant={youtubeChannels.length > 0 ? 'outlined' : 'contained'}
+                      startIcon={ytLoading ? <CircularProgress size={12} color="inherit" /> : <Plus size={13} />}
+                      sx={youtubeChannels.length > 0 ? {
+                        fontSize: '0.6875rem', color: C.textSecondary, borderColor: C.grey300,
+                        borderRadius: '8px', textTransform: 'none', fontWeight: 500, px: 1.5, flexShrink: 0,
+                        '&:hover': { borderColor: C.textPrimary, color: C.textPrimary, backgroundColor: 'transparent' },
+                      } : {
+                        fontSize: '0.6875rem', bgcolor: C.textPrimary, color: '#fff',
+                        borderRadius: '8px', textTransform: 'none', fontWeight: 600, px: 1.5, flexShrink: 0,
+                        boxShadow: 'none', '&:hover': { bgcolor: '#2A2828', boxShadow: 'none' },
+                      }}
+                    >
+                      {ytLoading ? 'Connecting…' : youtubeChannels.length > 0 ? 'Add channel' : 'Connect'}
+                    </Button>
+                  </Box>
+
+                  {ytError && (
+                    <Box sx={{ mx: 1, mb: 1, p: 1.25, borderRadius: '8px', backgroundColor: '#FCE0E0', display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <AlertTriangle size={13} color="#C41520" />
+                      <Typography sx={{ fontSize: '0.6875rem', color: '#C41520', lineHeight: 1.4 }}>{ytError}</Typography>
+                    </Box>
+                  )}
+
+                  {youtubeChannels.map(ch => (
+                    <Box key={ch.channelId} sx={{
+                      ml: 6, mb: 1, p: 1.25, borderRadius: '10px',
+                      border: `1px solid ${ch.status === 'RECONNECT_REQUIRED' ? '#F5B5B5' : C.grey300}`,
+                      backgroundColor: ch.status === 'RECONNECT_REQUIRED' ? '#FFF8F8' : '#FFFFFF',
+                      display: 'flex', alignItems: 'center', gap: 1.25,
+                    }}>
+                      {ch.thumbnailUrl ? (
+                        <Avatar src={ch.thumbnailUrl} sx={{ width: 28, height: 28, flexShrink: 0 }} />
+                      ) : (
+                        <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: C.grey100, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <YouTubeIcon size={14} />
+                        </Box>
+                      )}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.2 }} noWrap>
+                          {ch.channelName}
+                        </Typography>
+                        {ch.subscriberCount ? (
+                          <Typography sx={{ fontSize: '0.625rem', color: C.textMuted }}>{fmtSubs(ch.subscriberCount)} subscribers</Typography>
+                        ) : null}
+                      </Box>
+                      {ch.status === 'ACTIVE' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.successMain }} />
+                          <Typography sx={{ fontSize: '0.625rem', fontWeight: 600, color: C.successDark }}>Active</Typography>
+                        </Box>
+                      )}
+                      {ch.status === 'RECONNECT_REQUIRED' && (
+                        <Button size="small" startIcon={<RefreshCw size={11} />} onClick={() => reconnectYouTubeChannel(ch.channelId)}
+                          sx={{ fontSize: '0.625rem', color: C.warnMain ?? '#B45309', textTransform: 'none', fontWeight: 600, px: 1, borderRadius: '6px', flexShrink: 0, '&:hover': { backgroundColor: '#FEF3C7' } }}>
+                          Reconnect
+                        </Button>
+                      )}
+                      <Button size="small" startIcon={disconnecting === ch.channelId ? <CircularProgress size={10} color="inherit" /> : <Unlink size={11} />}
+                        disabled={disconnecting === ch.channelId}
+                        onClick={() => handleDisconnectYouTube(ch.channelId)}
+                        sx={{ fontSize: '0.625rem', color: C.textMuted, textTransform: 'none', fontWeight: 400, px: 1, borderRadius: '6px', flexShrink: 0, minWidth: 0, '&:hover': { color: C.errorMain, backgroundColor: '#FCE0E020' } }}>
+                        Remove
+                      </Button>
+                    </Box>
+                  ))}
+                </Box>
+
+                <Divider sx={{ borderColor: C.grey100, my: 0.5 }} />
+
+                {/* ── Spotify ── */}
+                <Box sx={{ mt: 1 }}>
+                  {(() => {
+                    const spotifyConn = connections.find(c => c.platform === 'spotify');
+                    return (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1 }}>
+                        <Box sx={{ width: 36, height: 36, borderRadius: '10px', backgroundColor: '#F0FBF2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <SpotifyIcon size={18} />
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography sx={{ fontSize: '0.8125rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em' }}>Spotify for Podcasters</Typography>
+                          {spotifyConn ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
+                              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.successMain }} />
+                              <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: C.successDark }}>{spotifyConn.displayName}</Typography>
+                            </Box>
+                          ) : (
+                            <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>Connect to track episode plays and listener data</Typography>
+                          )}
+                        </Box>
+                        {spotifyConn ? (
+                          <Button size="small" startIcon={disconnecting === 'spotify' ? <CircularProgress size={10} color="inherit" /> : <Unlink size={11} />}
+                            disabled={disconnecting === 'spotify'}
+                            onClick={handleDisconnectSpotify}
+                            sx={{ fontSize: '0.6875rem', color: C.textMuted, borderColor: C.grey300, borderRadius: '8px', textTransform: 'none', fontWeight: 500, px: 1.5, flexShrink: 0, border: `1px solid ${C.grey300}`, '&:hover': { color: C.errorMain, borderColor: '#F5B5B5', backgroundColor: '#FCE0E020' } }}>
+                            Disconnect
+                          </Button>
+                        ) : (
+                          <Button size="small" variant="contained" disabled={spotifyLoading}
+                            startIcon={spotifyLoading ? <CircularProgress size={12} color="inherit" /> : <Plus size={13} />}
+                            onClick={handleConnectSpotify}
+                            sx={{ fontSize: '0.6875rem', bgcolor: '#1DB954', color: '#fff', borderRadius: '8px', textTransform: 'none', fontWeight: 600, px: 1.5, flexShrink: 0, boxShadow: 'none', '&:hover': { bgcolor: '#17a349', boxShadow: 'none' }, '&.Mui-disabled': { bgcolor: C.grey300, color: C.textMuted } }}>
+                            {spotifyLoading ? 'Connecting…' : 'Connect'}
+                          </Button>
+                        )}
+                      </Box>
+                    );
+                  })()}
+                </Box>
+
+                <Divider sx={{ borderColor: C.grey100, my: 1.5 }} />
+
+                {/* Coming soon */}
+                {[
+                  { icon: '✉️', name: 'Substack',        desc: 'Open rates, subscriber growth' },
+                  { icon: '📈', name: 'Google Analytics', desc: 'Website traffic from content'  },
+                ].map((integ, i, arr) => (
                   <Box key={integ.name}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1, opacity: 0.5 }}>
                       <Box sx={{ width: 36, height: 36, borderRadius: '10px', backgroundColor: C.grey100, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                         {integ.icon}
                       </Box>
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', mb: 0.2 }}>{integ.name}</Typography>
-                        <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, lineHeight: 1.4 }}>{integ.desc}</Typography>
+                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em' }}>{integ.name}</Typography>
+                        <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted }}>{integ.desc}</Typography>
                       </Box>
-                      {integ.status === 'connected' ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-                          <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: C.successMain }} />
-                          <Typography sx={{ fontSize: '0.6875rem', fontWeight: 600, color: C.successDark }}>Connected</Typography>
-                        </Box>
-                      ) : (
-                        <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, flexShrink: 0, fontStyle: 'italic' }}>Soon</Typography>
-                      )}
+                      <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, flexShrink: 0, fontStyle: 'italic' }}>Coming soon</Typography>
                     </Box>
-                    {i < INTEGRATIONS.length - 1 && <Divider sx={{ borderColor: C.grey100 }} />}
+                    {i < arr.length - 1 && <Divider sx={{ borderColor: C.grey100 }} />}
                   </Box>
                 ))}
               </CardContent>
