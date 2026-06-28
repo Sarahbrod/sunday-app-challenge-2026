@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api, ApiError } from '@/lib/api';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -190,11 +191,48 @@ export default function OnboardingPage() {
   const [name,        setName]       = useState('');
   const [email,       setEmail]      = useState('');
   const [password,    setPassword]   = useState('');
+  const [authError,   setAuthError]  = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   const finish = () => {
     localStorage.setItem('onboarding_complete', 'true');
-    localStorage.setItem('has_data', 'false');
     router.replace('/');
+  };
+
+  const handleAuth = async () => {
+    setAuthError(null);
+    setAuthLoading(true);
+    try {
+      if (authMode === 'signup') {
+        await api.auth.signup({
+          name,
+          email,
+          password,
+          account_type: 'solo',
+          interests: [],
+        });
+      } else {
+        await api.auth.login(email, password);
+      }
+      setStep(2);
+    } catch (err) {
+      setAuthError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleFinish = async () => {
+    // Update account type and interests on the Django profile
+    try {
+      await api.auth.updateProfile({
+        account_type: (accountType ?? 'solo') as 'solo' | 'creator' | 'agency' | 'business',
+        interests,
+      });
+    } catch {
+      // Non-fatal — proceed anyway
+    }
+    finish();
   };
 
   const toggleInterest = (v: string) =>
@@ -302,8 +340,14 @@ export default function OnboardingPage() {
               </Box>
             </Box>
 
-            <Button fullWidth onClick={() => setStep(2)} sx={{ ...ctaSx, mb: 3 }}>
-              {authMode === 'signup' ? 'Create account' : 'Sign in'}
+            {authError && (
+              <Box sx={{ mb: 2, p: 1.5, borderRadius: '8px', backgroundColor: '#FCE0E0', border: '1px solid #F5B5B5' }}>
+                <Typography sx={{ fontSize: '0.8125rem', color: '#C41520', lineHeight: 1.5 }}>{authError}</Typography>
+              </Box>
+            )}
+
+            <Button fullWidth onClick={handleAuth} disabled={authLoading} sx={{ ...ctaSx, mb: 3, '&.Mui-disabled': { bgcolor: C.grey300, color: C.textMuted } }}>
+              {authLoading ? 'Please wait…' : authMode === 'signup' ? 'Create account' : 'Sign in'}
             </Button>
 
             <Divider sx={{ mb: 3 }}>
@@ -419,12 +463,12 @@ export default function OnboardingPage() {
               })}
             </Box>
 
-            <Button fullWidth onClick={finish} sx={{ ...ctaSx, mb: 1.5 }}>
+            <Button fullWidth onClick={handleFinish} sx={{ ...ctaSx, mb: 1.5 }}>
               Get Started
             </Button>
 
             <Box sx={{ textAlign: 'center' }}>
-              <Typography component="span" onClick={finish}
+              <Typography component="span" onClick={handleFinish}
                 sx={{ fontSize: '0.8125rem', color: C.textMuted, cursor: 'pointer', letterSpacing: '-0.01em', '&:hover': { color: C.textSecondary } }}>
                 Skip for now
               </Typography>

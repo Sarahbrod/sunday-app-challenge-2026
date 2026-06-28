@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -10,12 +10,13 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Collapse from '@mui/material/Collapse';
 import LinearProgress from '@mui/material/LinearProgress';
-import { TrendingUp, TrendingDown, Minus, ArrowRight, Plus, Sparkles, BookOpen, ChevronDown, CheckCircle, XCircle, MinusCircle, FlaskConical, Link2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Plus, Sparkles, ChevronDown, CheckCircle, XCircle, MinusCircle, FlaskConical, Link2 } from 'lucide-react';
 
 import { ACTIVE_EXPERIMENTS, COMPLETED_EXPERIMENTS, RECOMMENDED_EXPERIMENTS, EXPERIMENT_TEMPLATES } from '@/data/experiments';
 import ExperimentBuilder from '@/components/ExperimentBuilder';
 import ConnectDataModal from '@/components/ConnectDataModal';
 import { useConnections } from '@/hooks/useConnections';
+import { api, type ExperimentRecord } from '@/lib/api';
 
 const C = {
   textPrimary:   '#1C1C1C',
@@ -54,12 +55,22 @@ export default function ExperimentLab() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [expandedExp, setExpandedExp] = useState<string | null>(null);
   const [connectOpen,  setConnectOpen]  = useState(false);
+  const [dbExperiments, setDbExperiments] = useState<ExperimentRecord[] | null>(null);
   const { connections, youtubeChannels, connect, disconnect, connectYouTube, disconnectYouTubeChannel, reconnectYouTubeChannel, uploadCsv } = useConnections();
   const showLiveData = connections.length > 0 || youtubeChannels.some(c => c.status === 'ACTIVE');
 
+  useEffect(() => {
+    api.experiments.list()
+      .then(setDbExperiments)
+      .catch(() => setDbExperiments(null)); // Not logged in — fall back to static data
+  }, []);
+
+  const activeExperiments  = dbExperiments ? dbExperiments.filter(e => e.status === 'ACTIVE')    : ACTIVE_EXPERIMENTS;
+  const completedExperiments = dbExperiments ? dbExperiments.filter(e => e.status === 'COMPLETED') : COMPLETED_EXPERIMENTS;
+
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'active',    label: 'Active',    count: showLiveData ? ACTIVE_EXPERIMENTS.length : 0    },
-    { key: 'completed', label: 'Completed', count: showLiveData ? COMPLETED_EXPERIMENTS.length : 0 },
+    { key: 'active',    label: 'Active',    count: showLiveData ? activeExperiments.length : 0    },
+    { key: 'completed', label: 'Completed', count: showLiveData ? completedExperiments.length : 0 },
   ];
 
   return (
@@ -75,32 +86,6 @@ export default function ExperimentLab() {
           New experiment
         </Button>
       </Box>
-
-      {/* ── Experiment library ── */}
-      <Collapse in={showLibrary}>
-        <Card className="fade-in delay-1" sx={{ mb: 3 }}>
-          <CardContent sx={{ p: '20px !important' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography sx={{ fontSize: '0.9375rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.02em' }}>Experiment library</Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: C.textMuted }}>10 pre-built templates</Typography>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)', md: 'repeat(5, 1fr)' }, gap: 1.5 }}>
-              {EXPERIMENT_TEMPLATES.map((t) => (
-                <Box key={t.id} onClick={() => setBuilderOpen(true)}
-                  sx={{ p: 1.75, borderRadius: '10px', border: `1px solid ${C.grey300}`, cursor: 'pointer', transition: 'all 0.15s ease', '&:hover': { borderColor: C.textPrimary, backgroundColor: C.yellowLight } }}>
-                  <Typography sx={{ fontSize: '1.25rem', mb: 0.75, lineHeight: 1 }}>{t.icon}</Typography>
-                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.5 }}>{t.name}</Typography>
-                  <Typography sx={{ fontSize: '0.625rem', color: C.textMuted, lineHeight: 1.4, mb: 1 }}>{t.category}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography sx={{ fontSize: '0.625rem', fontWeight: 700, color: C.successDark }}>{t.avgImpact}</Typography>
-                    <Chip label={t.difficulty} size="small" sx={{ height: 14, fontSize: '0.5rem', fontWeight: 600, bgcolor: t.difficulty === 'Easy' ? C.successLight : t.difficulty === 'Medium' ? C.yellowLight : C.errorLight, color: t.difficulty === 'Easy' ? C.successDark : t.difficulty === 'Medium' ? '#B89530' : C.errorMain, '& .MuiChip-label': { px: '5px' } }} />
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </CardContent>
-        </Card>
-      </Collapse>
 
       {/* ── Tabs ── */}
       <Box className="fade-in delay-2" sx={{ display: 'flex', borderBottom: `2px solid ${C.grey300}`, mb: 3 }}>
@@ -204,25 +189,36 @@ export default function ExperimentLab() {
                 </Box>
               </Box>
             ) : (
-              ACTIVE_EXPERIMENTS.map((exp, i) => (
-                <Box key={exp.id} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr auto', md: '1fr 110px 100px 80px 72px 72px' }, gap: { xs: 1, md: 1.5 }, py: 1.75, borderBottom: i < ACTIVE_EXPERIMENTS.length - 1 ? `1px solid ${C.grey100}` : 'none', alignItems: 'center' }}>
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.2 }}>{exp.title}</Typography>
-                    <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, lineHeight: 1.5, display: { md: 'none' } }}>{exp.creator} · {exp.daysRunning}d</Typography>
-                    <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, lineHeight: 1.5, display: { xs: 'none', md: 'block' } }}>{exp.hypothesis.slice(0, 60)}…</Typography>
+              activeExperiments.map((exp: typeof ACTIVE_EXPERIMENTS[0] | ExperimentRecord, i) => {
+                const id             = exp.id;
+                const title          = exp.title;
+                const creator        = 'creator' in exp ? exp.creator : (exp as ExperimentRecord).creator_name;
+                const variable       = exp.variable;
+                const successMetric  = 'successMetric' in exp ? exp.successMetric : (exp as ExperimentRecord).success_metric;
+                const signal         = exp.signal;
+                const currentLift    = 'currentLift' in exp ? exp.currentLift : (exp as ExperimentRecord).current_lift;
+                const daysRunning    = 'daysRunning' in exp ? exp.daysRunning : (exp as ExperimentRecord).days_running;
+                const hypothesis     = exp.hypothesis;
+                return (
+                  <Box key={id} sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr auto', md: '1fr 110px 100px 80px 72px 72px' }, gap: { xs: 1, md: 1.5 }, py: 1.75, borderBottom: i < activeExperiments.length - 1 ? `1px solid ${C.grey100}` : 'none', alignItems: 'center' }}>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: C.textPrimary, letterSpacing: '-0.01em', lineHeight: 1.3, mb: 0.2 }}>{title}</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, lineHeight: 1.5, display: { md: 'none' } }}>{creator} · {daysRunning}d</Typography>
+                      <Typography sx={{ fontSize: '0.6875rem', color: C.textMuted, lineHeight: 1.5, display: { xs: 'none', md: 'block' } }}>{hypothesis.slice(0, 60)}…</Typography>
+                    </Box>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textSecondary }}>{creator}</Typography>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.4 }}>{variable.slice(0, 30)}</Typography>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary }}>{successMetric}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {signal === 'up'      && <TrendingUp size={15} color={C.successDark} />}
+                      {signal === 'down'    && <TrendingDown size={15} color={C.errorMain} />}
+                      {signal === 'neutral' && <Minus size={15} color={C.textMuted} />}
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: signal === 'up' ? C.successDark : signal === 'down' ? C.errorMain : C.textMuted }}>{currentLift}</Typography>
+                    </Box>
+                    <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textMuted }}>{daysRunning}d</Typography>
                   </Box>
-                  <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.8125rem', color: C.textSecondary }}>{exp.creator}</Typography>
-                  <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary, lineHeight: 1.4 }}>{exp.variable.slice(0, 30)}</Typography>
-                  <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textSecondary }}>{exp.successMetric}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {exp.signal === 'up'      && <TrendingUp size={15} color={C.successDark} />}
-                    {exp.signal === 'down'    && <TrendingDown size={15} color={C.errorMain} />}
-                    {exp.signal === 'neutral' && <Minus size={15} color={C.textMuted} />}
-                    <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: exp.signal === 'up' ? C.successDark : exp.signal === 'down' ? C.errorMain : C.textMuted }}>{exp.currentLift}</Typography>
-                  </Box>
-                  <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.75rem', color: C.textMuted }}>{exp.daysRunning}d</Typography>
-                </Box>
-              ))
+                );
+              })
             )}
           </CardContent>
         </Card>
@@ -257,7 +253,7 @@ export default function ExperimentLab() {
                 </Box>
               </CardContent>
             </Card>
-          ) : COMPLETED_EXPERIMENTS.map((exp) => {
+          ) : (completedExperiments as typeof COMPLETED_EXPERIMENTS).map((exp) => {
             const isOpen = expandedExp === exp.id;
             const ws = WINNER_STYLE[exp.winner];
             const WinIcon = ws.icon;

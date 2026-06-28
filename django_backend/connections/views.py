@@ -37,6 +37,19 @@ class YouTubeChannelListView(APIView):
         channels = request.user.youtube_channels.all()
         return Response(YouTubeChannelSerializer(channels, many=True).data)
 
+    def post(self, request):
+        from .serializers import YouTubeChannelRegisterSerializer
+        serializer = YouTubeChannelRegisterSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        channel = serializer.save()
+        return Response(YouTubeChannelSerializer(channel).data, status=status.HTTP_201_CREATED)
+
+
+class YouTubeChannelDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def delete(self, request, pk):
         try:
             channel = request.user.youtube_channels.get(pk=pk)
