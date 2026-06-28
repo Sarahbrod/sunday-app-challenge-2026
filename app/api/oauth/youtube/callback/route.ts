@@ -105,24 +105,47 @@ export async function GET(req: NextRequest) {
   const ch = channelData.items?.[0];
   if (!ch) return closePopup('no_channel');
 
-  // Build success redirect — display metadata only, never tokens
-  const successParams = new URLSearchParams({ status: 'success' });
-  successParams.set('channelId',   ch.id);
-  successParams.set('channelName', ch.snippet?.title ?? 'YouTube Channel');
-  if (ch.snippet?.thumbnails?.default?.url) {
-    successParams.set('thumbnailUrl', ch.snippet.thumbnails.default.url);
-  }
-  if (ch.statistics?.subscriberCount) {
-    successParams.set('subscriberCount', ch.statistics.subscriberCount);
+  const channelId      = ch.id;
+  const channelName    = ch.snippet?.title ?? 'YouTube Channel';
+  const thumbnailUrl   = ch.snippet?.thumbnails?.default?.url ?? '';
+  const subscriberCount = ch.statistics?.subscriberCount
+    ? parseInt(ch.statistics.subscriberCount, 10)
+    : undefined;
+
+  // ── Persist tokens to Django server-side ─────────────────────────────────
+  // Server-to-server: forward the user's JWT cookie so Django can authenticate.
+  // Tokens are encrypted by Django (Fernet) and never reach the browser.
+  const djangoUrl      = process.env.NEXT_PUBLIC_DJANGO_URL ?? 'http://localhost:8000';
+  const cookieHeader   = req.headers.get('cookie') ?? '';
+  const tokenExpiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+
+  try {
+    await fetch(`${djangoUrl}/api/connections/youtube/`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+      body: JSON.stringify({
+        channel_id:       channelId,
+        channel_name:     channelName,
+        thumbnail_url:    thumbnailUrl,
+        subscriber_count: subscriberCount,
+        access_token:     tokens.access_token,
+        refresh_token:    tokens.refresh_token ?? '',
+        token_expires_at: tokenExpiresAt,
+      }),
+    });
+  } catch {
+    // Non-fatal — UI still updates via the postMessage; user can reconnect to
+    // re-persist tokens if Django was unreachable.
   }
 
-  // Clear the PKCE state cookie and redirect the popup to the closer page
+  // Build success redirect — display metadata only, never tokens in the URL
+  const successParams = new URLSearchParams({ status: 'success' });
+  successParams.set('channelId',   channelId);
+  successParams.set('channelName', channelName);
+  if (thumbnailUrl)    successParams.set('thumbnailUrl',    thumbnailUrl);
+  if (subscriberCount) successParams.set('subscriberCount', String(subscriberCount));
+
   const res = NextResponse.redirect(`${APP_URL}/oauth/callback?${successParams.toString()}`);
   res.cookies.delete('yt_oauth_state');
-
-  // NOTE: tokens.refresh_token should be encrypted and stored in your DB here.
-  // Until DB integration is complete, the connection persists in sessionStorage
-  // (display metadata only — the refresh token is intentionally not forwarded).
-
   return res;
 }
